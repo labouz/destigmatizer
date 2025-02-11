@@ -1,22 +1,10 @@
 # the script for labeling a post as durg-related or not
-import pandas as pd
-import openai
 import time
-from threading import Lock
 
-rate_limit = 10000
-tpm_limit = 1000000  # Tokens per minute
-rate_limit_period = 60  # seconds
 retry_wait_time = 5  # seconds between retries
 
-# Global variables for tracking rate limit
-request_count = 0
-token_count = 0
-request_lock = Lock()
-token_lock = Lock()
 
 def get_drug_post(post, retries = 2, model = None, openai_client=None):
-# prompt
     prompt = f"""
     *Instructions for Labeling Drug References in Social Media Posts*
 
@@ -98,23 +86,9 @@ def get_drug_post(post, retries = 2, model = None, openai_client=None):
     example9 = "Recently I took a psychological exam for work. To know if I'm fit to work.The doctor looked at my paper and asked 'Do your have urges to hurt/killpeople?' I laughed in my head and lied.."
     answer9 = "ND"
 
-    global request_count, token_count
 
     while retries > 0:
         try:
-            with request_lock:
-                if request_count >= rate_limit:
-                    print("Rate limit reached. Pausing for a minute...")
-                    time.sleep(rate_limit_period)
-                    request_count = 0
-
-            with token_lock:
-                if token_count >= tpm_limit:
-                    print("TPM limit reached. Pausing for a minute...")
-                    time.sleep(rate_limit_period)
-                    token_count = 0
-
-
             response = openai_client.chat.completions.create(
             messages=[
                 {
@@ -202,18 +176,9 @@ def get_drug_post(post, retries = 2, model = None, openai_client=None):
             model=model,
             temperature=0
         )
-            with request_lock:
-                request_count += 1
-
-            with token_lock:
-                token_count += sum([len(prompt), len(response.choices[0].message.content)])
-
+            
             label = response.choices[0].message.content.lower().strip()
             return label
-        except openai.RateLimitError as e:
-            print(f"Rate limit error: {e}. Retrying in {retry_wait_time} seconds...")
-            time.sleep(retry_wait_time)
-            retries -= 1
         except Exception as e:
             print(f"An error occurred: {e}. Retrying...")
             retries -= 1
