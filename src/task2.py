@@ -1,21 +1,10 @@
 # the script for labeling a post as containing stigmatizing language or not
-import pandas as pd
 import time
-import openai
-from threading import Lock
 
-rate_limit = 10000
-tpm_limit = 800000  # Tokens per minute
-tpd_limit = 80000000  # Tokens per day
-rate_limit_period = 60  # seconds
+
 retry_wait_time = 5  # seconds between retries
 
-# Global variables for tracking rate limit
-request_count = 0
-token_count = 0
-daily_token_count = 0
-request_lock = Lock()
-token_lock = Lock()
+
 
 def get_utterance(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_client=None):
     prompt = f"""
@@ -82,28 +71,10 @@ def get_utterance(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_cl
     example10 = "Crack is a better alternative to coffee All coffee does is make you feel less drowsy. When I smoke a bowl of crack in the morning, shit gets me gooooinn, makes me go absolutely bonkers, crazy ridiculous out of the world bonkers ! I'm getting the jitters just thinkin about it"
     answer10 = "NS"
 
-    global request_count, token_count, daily_token_count
-    response_tokens = 0  # Initialize response_tokens before the try block
 
 
     while retries > 0:
         try:
-            with request_lock:
-                if request_count >= rate_limit:
-                    print("Rate limit reached. Pausing for a minute...")
-                    time.sleep(rate_limit_period)
-                    request_count = 0
-            with token_lock:
-                if token_count >= tpm_limit:
-                    print(token_count)
-                    print("TPM limit reached. Pausing for a minute...")
-                    time.sleep(rate_limit_period)
-                    token_count = 0
-
-                if daily_token_count >= tpd_limit:
-                    print("TPD limit reached. Stopping processing...")
-                    return "skipped"
-
             response = openai_client.chat.completions.create(
             messages=[
                 {
@@ -200,21 +171,10 @@ def get_utterance(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_cl
             model=model,
             temperature=0
         )
-            with request_lock:
-                request_count += 1
-
-            with token_lock:
-                response_tokens += sum([len(prompt), len(response.choices[0].message.content)])
-                token_count += response_tokens
-                daily_token_count += response_tokens
 
             label = response.choices[0].message.content.lower().strip()
             return label
         
-        except openai.RateLimitError as e:
-            print(f"Rate limit error: {e}. Retrying in {retry_wait_time} seconds...")
-            time.sleep(retry_wait_time)
-            retries -= 1
         except Exception as e:
             print(f"An error occurred: {e}. Retrying...")
             retries -= 1
