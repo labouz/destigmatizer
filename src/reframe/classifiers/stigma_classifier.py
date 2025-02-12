@@ -6,7 +6,7 @@ retry_wait_time = 5  # seconds between retries
 
 
 
-def get_utterance(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_client=None):
+def determine_if_contains_stigma(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_client=None):
     prompt = f"""
     **Instructions:**
     You are an expert in identifying stigma related to drug use and addiction in social media posts. Your task is to analyze each post and determine if it contains stigmatizing language. 
