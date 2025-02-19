@@ -4,7 +4,7 @@ import time
 retry_wait_time = 5  # seconds between retries
 
 
-def classify_if_drug_post(post, retries = 2, model = None, openai_client=None):
+def classify_if_drug(post, retries = 2, model = None, openai_client=None):
     """
     Classify if a post contains drug-related content.
 
