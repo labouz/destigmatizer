@@ -4,7 +4,7 @@ import time
 retry_wait_time = 5  # seconds between retries
 
 
-def rewrite_to_destigma(post, explanation, style_instruct, step, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_client=None):
+def rewrite_to_destigma(post, explanation, style_instruct, step, model="gpt-4o", retries=2, openai_client=None):
     # explanation in the form of Labeling: Uses the term 'junkies,' a derogatory label, Stereotyping: Portrays people who use drugs as irresponsible and a burden on society, Separation: Explicitly states that people with addiction do not belong in society, Discrimination: Advocates for stripping rights and marking individuals with addiction, suggesting they should be treated differently and excluded from societal opportunities.
 
     if step == 1:

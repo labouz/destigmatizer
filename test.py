@@ -23,7 +23,12 @@ style_result = reframe.retrive_style_instruction(test_text)
 print(f"Style analysis result: {style_result}")
 
 # Test text rewriting with sample explanation and style
-sample_explanation = "Labeling: Contains stigmatizing labels"
-sample_style = {"tone": "neutral", "lexical_diversity": "moderate"}
-rewrite_result = reframe.rewrite_text(test_text, sample_explanation, sample_style)
+test_text = "Junkies are ruining our neighborhood"
+sample_explanation = """Labeling: Uses the term 'junkies,' a derogatory label, 
+Stereotyping: Portrays people who use drugs as causing neighborhood problems, 
+Separation: Creates an us-vs-them mentality, 
+Discrimination: Implies people who use drugs don't belong in the neighborhood"""
+
+style_instruct = str(style_result)  # Use the actual style analysis result
+rewrite_result = reframe.rewrite_text(test_text, sample_explanation, style_instruct)
 print(f"Rewrite result: {rewrite_result}")

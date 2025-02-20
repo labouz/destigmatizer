@@ -1,6 +1,6 @@
 from typing import Optional
 from openai import OpenAI
-from .classifiers import drug_classifier, stigma_classifier, rewriter, get_style
+from .classifiers import drug_classifier, stigma_classifier, rewriter, get_style, get_emotion
 
 class Reframe:
     """Main class for the reframe package."""
@@ -10,17 +10,17 @@ class Reframe:
 
     def classify_drug_content(self, text: str) -> str:
         """Classify if text contains drug-related content."""
-        return drug_classifier.classify_if_drug(text, self.client)
+        return drug_classifier.classify_if_drug(text, 2, "gpt-4o", self.client)
         
     def analyze_stigma(self, text: str) -> str:
         """Analyze text for stigmatizing language. Returns the label and explanation."""
-        return stigma_classifier.classify_if_stigma(text, self.client)
+        return stigma_classifier.classify_if_stigma(text, 2, "gpt-4o", self.client)
     
     def retrive_style_instruction(self, text: str) -> dict:
         """Retrieve style instructions for rewrit_text."""
         return get_style.analyze_text_llm(text, self.client)
     
     def rewrite_text(self, text: str, explanation: str, 
-                    style: Optional[dict] = None) -> str:
+                    style: Optional[dict] = None, step:int, model:str, retry:int, self.client) -> str:
         """Rewrite text to remove stigmatizing language."""
-        return rewriter.rewrite_to_destigma(text, explanation, style, self.client)
+        return rewriter.rewrite_to_destigma(text, explanation, style, step, retry, self.client)

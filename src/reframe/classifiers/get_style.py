@@ -1,8 +1,12 @@
+import nltk
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk import pos_tag
 import string
 from lexicalrichness import LexicalRichness
-from get_emotion import get_emotion
+from .get_emotion import get_emotion
+
 
 
 def mtld_LD(word_list):
