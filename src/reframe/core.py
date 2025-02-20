@@ -20,7 +20,7 @@ class Reframe:
         """Retrieve style instructions for rewrit_text."""
         return get_style.analyze_text_llm(text, self.client)
     
-    def rewrite_text(self, text: str, explanation: str, 
-                    style: Optional[dict] = None, step:int, model:str, retry:int, self.client) -> str:
+    def rewrite_text(self, text: str, explanation: str, step: int, 
+                model: str, retry: int, style: Optional[dict] = None) -> str:
         """Rewrite text to remove stigmatizing language."""
-        return rewriter.rewrite_to_destigma(text, explanation, style, step, retry, self.client)
+        return rewriter.rewrite_to_destigma(text, explanation, style, step, model, retry, self.client)
