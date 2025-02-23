@@ -7,8 +7,6 @@ import string
 from lexicalrichness import LexicalRichness
 from .get_emotion import get_emotion
 
-
-
 def mtld_LD(word_list):
     def mtld_calc(words, ttr_threshold=0.72):
         count, total = 0, 0
