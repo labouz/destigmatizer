@@ -1,6 +1,7 @@
 # the script for labeling a post as durg-related or not
 import time
 from openai import OpenAI
+from together import Together
 
 def initialize(api_key=None, client=None, client_type="openai"):
     """
@@ -9,7 +10,7 @@ def initialize(api_key=None, client=None, client_type="openai"):
     Args:
         api_key (str, optional): API key for the language model service
         client (object, optional): Pre-configured client instance
-        client_type (str, optional): Type of client ("openai" by default)
+        client_type (str, optional): Type of client ("openai" or "together")
         
     Returns:
         object: Configured client instance
@@ -18,10 +19,12 @@ def initialize(api_key=None, client=None, client_type="openai"):
         ValueError: If neither api_key nor client is provided, or if client_type is unsupported
     """
     if client:
-        return client
+        return client, client_type
     elif api_key:
         if client_type.lower() == "openai":
-            return OpenAI(api_key=api_key)
+            return OpenAI(api_key=api_key), client_type
+        elif client_type.lower() == "together":
+            return Together(api_key=api_key), client_type
         else:
             raise ValueError(f"Unsupported client type: {client_type}")
     else:
@@ -30,8 +33,35 @@ def initialize(api_key=None, client=None, client_type="openai"):
     
 retry_wait_time = 5  # seconds between retries
 
+def create_completion(client, messages, model=None, temperature=0, client_type="openai"):
+    """
+    Create a chat completion using the specified client and model.
+    
+    Args:
+        client: The client instance (OpenAI or Together)
+        messages: List of message dictionaries
+        model: Model identifier
+        temperature: Sampling temperature
+        client_type: Type of client ("openai" or "together")
+        
+    Returns:
+        str: The generated response content
+    """
+    try:
+        # Set default model based on client type
+        if not model:
+            model = "gpt-4o" if client_type == "openai" else "meta-llama/Meta Llama 3.1 70B Instruct Turbo"
+            
+        response = client.chat.completions.create(
+            messages=messages,
+            model=model,
+            temperature=temperature
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        raise Exception(f"Error creating completion: {str(e)}")
 
-def classify_if_drug(post, retries = 2, model = None, openai_client=None):
+def classify_if_drug(post, retries = 2, model = None, client=None, client_type="openai"):
     """
     Classify if a post contains drug-related content.
 
@@ -39,13 +69,14 @@ def classify_if_drug(post, retries = 2, model = None, openai_client=None):
         post (str): The text content to classify
         retries (int, optional): Number of API call retries. Defaults to 2.
         model (str, optional): OpenAI model to use. Defaults to None.
-        openai_client: OpenAI client instance. Defaults to None.
+        client: Client instance. Defaults to None.
+        client_type (str, optional): Type of client ("openai" or "together"). Defaults to "openai".
 
     Returns:
         str: 'D' for drug-related, 'ND' for non-drug-related, 'skipped' on error
 
     Raises:
-        ValueError: If openai_client is None
+        ValueError: If client is None
     """
     prompt = f"""
     *Instructions for Labeling Drug References in Social Media Posts*
@@ -96,96 +127,34 @@ def classify_if_drug(post, retries = 2, model = None, openai_client=None):
 
     while retries > 0:
         try:
-            response = openai_client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt
-                },
-                {
-                    "role": "user",
-                    "content": example1
-
-                },
-                {
-                    "role": "system",
-                    "content": answer1
-                },
-                {
-                    "role": "user",
-                    "content": example2
-                },
-                {
-                    "role": "system",
-                    "content": answer2
-                },
-                {
-                    "role": "user",
-                    "content": example3
-                },
-                {
-                    "role": "system",
-                    "content": answer3
-                },
-                {
-                    "role": "user",
-                    "content": example4
-                },
-                {
-                    "role": "system",
-                    "content": answer4
-                },
-                {
-                    "role": "user",
-                    "content": example5
-                },
-                {
-                    "role": "system",
-                    "content": answer5
-                },
-                {
-                    "role": "user",
-                    "content": example6
-                },
-                {
-                    "role": "system",
-                    "content": answer6
-                },
-                {
-                    "role": "user",
-                    "content": example7
-                },
-                {
-                    "role": "system",
-                    "content": answer7
-                },
-                {
-                    "role": "user",
-                    "content": example8
-                },
-                {
-                    "role": "system",
-                    "content": answer8
-                },
-                {
-                    "role": "user",
-                    "content": example9
-                },
-                {
-                    "role": "system",
-                    "content": answer9
-                },
-                {
-                    "role": "user",
-                    "content": post
-                }
-            ],
-            model=model,
-            temperature=0
-        )
-            
-            label = response.choices[0].message.content.lower().strip()
-            return label
+            label = create_completion(
+                client,
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": example1},
+                    {"role": "system", "content": answer1},
+                    {"role": "user", "content": example2},
+                    {"role": "system", "content": answer2},
+                    {"role": "user", "content": example3},
+                    {"role": "system", "content": answer3},
+                    {"role": "user", "content": example4},
+                    {"role": "system", "content": answer4},
+                    {"role": "user", "content": example5},
+                    {"role": "system", "content": answer5},
+                    {"role": "user", "content": example6},
+                    {"role": "system", "content": answer6},
+                    {"role": "user", "content": example7},
+                    {"role": "system", "content": answer7},
+                    {"role": "user", "content": example8},
+                    {"role": "system", "content": answer8},
+                    {"role": "user", "content": example9},
+                    {"role": "system", "content": answer9},
+                    {"role": "user", "content": post}
+                ],
+                model=model,
+                client_type=client_type
+            )
+            return label.lower().strip()
         except Exception as e:
             print(f"An error occurred: {e}. Retrying...")
             retries -= 1
@@ -202,7 +171,7 @@ retry_wait_time = 5  # seconds between retries
 
 
 
-def classify_if_stigma(post, retries = 2, model = "gpt-4-turbo-2024-04-09", openai_client=None):
+def classify_if_stigma(post, retries = 2, model = None, client=None, client_type="openai"):
     prompt = f"""
     **Instructions:**
     You are an expert in identifying stigma related to drug use and addiction in social media posts. Your task is to analyze each post and determine if it contains stigmatizing language. 
@@ -271,105 +240,36 @@ def classify_if_stigma(post, retries = 2, model = "gpt-4-turbo-2024-04-09", open
 
     while retries > 0:
         try:
-            response = openai_client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt
-                },
-                {
-                    "role": "user",
-                    "content": example1
-
-                },
-                {
-                    "role": "system",
-                    "content": answer1
-                },
-                {
-                    "role": "user",
-                    "content": example2
-                },
-                {
-                    "role": "system",
-                    "content": answer2
-                },
-                {
-                    "role": "user",
-                    "content": example3
-                },
-                {
-                    "role": "system",
-                    "content": answer3
-                },
-                {
-                    "role": "user",
-                    "content": example4
-                },
-                {
-                    "role": "system",
-                    "content": answer4
-                },
-                {
-                    "role": "user",
-                    "content": example5
-                },
-                {
-                    "role": "system",
-                    "content": answer5
-                },
-                {
-                    "role": "user",
-                    "content": example6
-                },
-                {
-                    "role": "system",
-                    "content": answer6
-                },
-                {
-                    "role": "user",
-                    "content": example7
-                },
-                {
-                    "role": "system",
-                    "content": answer7
-                },
-                {
-                    "role": "user",
-                    "content": example8
-                },
-                {
-                    "role": "system",
-                    "content": answer8
-                },
-                {
-                    "role": "user",
-                    "content": example9
-                },
-                {
-                    "role": "system",
-                    "content": answer9
-                },
-                {
-                    "role": "user",
-                    "content": example10
-                },
-                {
-                    "role": "system",
-                    "content": answer10
-                },
-                {
-                    "role": "user",
-                    "content": post
-                }
-
-            ],
-            model=model,
-            temperature=0
-        )
-
-            label = response.choices[0].message.content.lower().strip()
-            return label
+            label = create_completion(
+                client,
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": example1},
+                    {"role": "system", "content": answer1},
+                    {"role": "user", "content": example2},
+                    {"role": "system", "content": answer2},
+                    {"role": "user", "content": example3},
+                    {"role": "system", "content": answer3},
+                    {"role": "user", "content": example4},
+                    {"role": "system", "content": answer4},
+                    {"role": "user", "content": example5},
+                    {"role": "system", "content": answer5},
+                    {"role": "user", "content": example6},
+                    {"role": "system", "content": answer6},
+                    {"role": "user", "content": example7},
+                    {"role": "system", "content": answer7},
+                    {"role": "user", "content": example8},
+                    {"role": "system", "content": answer8},
+                    {"role": "user", "content": example9},
+                    {"role": "system", "content": answer9},
+                    {"role": "user", "content": example10},
+                    {"role": "system", "content": answer10},
+                    {"role": "user", "content": post}
+                ],
+                model=model,
+                client_type=client_type
+            )
+            return label.lower().strip()
         
         except Exception as e:
             print(f"An error occurred: {e}. Retrying...")
@@ -384,7 +284,7 @@ import time
 retry_wait_time = 5  # seconds between retries
 
 
-def rewrite_to_destigma(post, explanation, style_instruct, step, model="gpt-4o", retries=2, openai_client=None):
+def rewrite_to_destigma(post, explanation, style_instruct, step, model=None, retries=2, client=None, client_type="openai"):
     # explanation in the form of Labeling: Uses the term 'junkies,' a derogatory label, Stereotyping: Portrays people who use drugs as irresponsible and a burden on society, Separation: Explicitly states that people with addiction do not belong in society, Discrimination: Advocates for stripping rights and marking individuals with addiction, suggesting they should be treated differently and excluded from societal opportunities.
 
     if step == 1:
@@ -418,23 +318,16 @@ def rewrite_to_destigma(post, explanation, style_instruct, step, model="gpt-4o",
 
     while retries > 0:
         try:
-            response = openai_client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt
-                },
-                {
-                    "role": "user",
-                    "content": post + ";" + ex + ";" + style_instruct
-                }
-            ],
-            model=model,
-            temperature=0
-        )
-
-            label = response.choices[0].message.content.lower().strip()
-            return label
+            label = create_completion(
+                client,
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": post + ";" + ex + ";" + style_instruct}
+                ],
+                model=model,
+                client_type=client_type
+            )
+            return label.lower().strip()
         
         except Exception as e:
             print(f"An error occurred: {e}. Retrying...")
@@ -524,23 +417,23 @@ Please play the role of an emotion recognition expert. Pleae provide the most li
 Only one emotion should be provided.
 
 """
-def get_emotion(text, client, model="gpt-4-turbo-2024-04-09", temperature=0, retries = 2):
+def get_emotion(text, client, model=None, temperature=0, retries=2, client_type="openai"):
     while retries > 0:
         try:
-            response = client.chat.completions.create(
+            label = create_completion(
+                client,
                 messages=[
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": text}
                 ],
+                model=model,
                 temperature=temperature,
-                model=model
+                client_type=client_type
             )
-            label = response.choices[0].message.content.lower().strip()
-            return label
+            return label.lower().strip()
         except Exception as e:
             retries -= 1
             print(f"Error: {e}")
             print(f"Retries left: {retries}")
             print("Retrying...")
             return "skipped"
-    

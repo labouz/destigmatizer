@@ -1,35 +1,97 @@
 from src.reframe import reframe
 import json
+import time
 
-# Load API key from secrets file
-with open("secrets.json") as f:
-    secrets = json.load(f)
-    api_key = secrets["OPENAI_API_KEY_SR"]
+def test_all_functions():
+    # Load API key from secrets file
+    with open("secrets.json") as f:
+        secrets = json.load(f)
+        api_key = secrets["TOGETHER_API_KEY"]
 
-# Initialize Reframe
-client = reframe.initialize(api_key=api_key)
+    # Test initialization
+    print("\nTesting initialization...")
+    client, client_type = reframe.initialize(api_key=api_key, client_type="together")
+    print("✓ Initialization successful")
 
-# # Test drug content classification
-# test_text = "this is for testing"
-# result = reframe.classify_if_drug(test_text)
-# print(f"Drug classification result: {result}")
+    # Test posts for classification
+    test_posts = {
+        "drug_post": "I'm so high right now, smoking the best weed ever",
+        "non_drug_post": "I'm feeling really down today, need someone to talk to",
+        "stigma_post": "All these junkies should be locked up, they're ruining our city",
+        "non_stigma_post": "People struggling with addiction need support and understanding"
+    }
 
-# # Test stigma analysis
-# stigma_result = reframe.classify_if_stigma(test_text)
-# print(f"Stigma analysis result: {stigma_result}")
+    # Test drug classification
+    print("\nTesting drug classification...")
+    for post_type, post in test_posts.items():
+        result = reframe.classify_if_drug(
+            post,
+            client=client,
+            client_type=client_type,
+            model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+        )
+        print(f"{post_type}: {result}")
 
-# # Test style analysis
-# style_result = reframe.analyze_text_llm(test_text)
-# print(f"Style analysis result: {style_result}")
+    # Test stigma classification
+    print("\nTesting stigma classification...")
+    for post_type, post in test_posts.items():
+        result = reframe.classify_if_stigma(
+            post,
+            client=client,
+            client_type=client_type,
+            model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+        )
+        print(f"{post_type}: {result}")
 
-# Test text rewriting with sample explanation and style
-test_text = "Junkies are ruining our neighborhood"
-sample_explanation = """Labeling: Uses the term 'junkies,' a derogatory label, 
-Stereotyping: Portrays people who use drugs as causing neighborhood problems, 
-Separation: Creates an us-vs-them mentality, 
-Discrimination: Implies people who use drugs don't belong in the neighborhood"""
+    # Test text analysis
+    print("\nTesting text analysis...")
+    sample_text = "This is a test sentence. It contains multiple parts. We want to analyze its style."
+    style_result = reframe.analyze_text_llm(sample_text, client)
+    print(f"Style analysis result: {style_result}")
 
-style_result = {'top emotions': 'neutral', 'punctuation_usage': 'moderate, with  being most frequent', 'passive_voice_usage': 'none', 'sentence_length_variation': 'ranging from short (4 words) to long (4 words) with an average of 4.0 words per sentence', 'lexical_diversity': '4.00 (MTLD)'}
-style_instruct = str(style_result)  # Use the actual style analysis result
-rewrite_result = reframe.rewrite_to_destigma(test_text, sample_explanation, style_instruct, 1, "gpt-4o", 2, openai_client=client)
-print(f"Rewrite result: {rewrite_result}")
+    # Test rewriting
+    print("\nTesting rewriting...")
+    test_text = "Junkies are ruining our neighborhood"
+    sample_explanation = """Labeling: Uses the term 'junkies,' a derogatory label, 
+    Stereotyping: Portrays people who use drugs as causing neighborhood problems, 
+    Separation: Creates an us-vs-them mentality, 
+    Discrimination: Implies people who use drugs don't belong in the neighborhood"""
+    
+    style_instruct = str(style_result)
+
+    # Test rewriting step 1
+    rewrite_step1 = reframe.rewrite_to_destigma(
+        test_text,
+        sample_explanation,
+        style_instruct,
+        1,
+        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        client=client,
+        client_type=client_type
+    )
+    print(f"Rewrite step 1 result: {rewrite_step1}")
+
+    # Test rewriting step 2
+    rewrite_step2 = reframe.rewrite_to_destigma(
+        rewrite_step1,
+        sample_explanation,
+        style_instruct,
+        2,
+        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        client=client,
+        client_type=client_type
+    )
+    print(f"Rewrite step 2 result: {rewrite_step2}")
+
+    # Test emotion detection
+    print("\nTesting emotion detection...")
+    emotion = reframe.get_emotion(
+        test_text,
+        client,
+        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        client_type=client_type
+    )
+    print(f"Detected emotion: {emotion}")
+
+if __name__ == "__main__":
+    test_all_functions()
