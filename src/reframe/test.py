@@ -1,9 +1,10 @@
 import reframe
 import json
-import time
 
 # Default model to use for all tests
-MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+Llama_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+OpenAi_MODEL = "gpt-4o"
+MODEL = Llama_MODEL
 
 def test_all_functions():
     # Load API key from secrets file
