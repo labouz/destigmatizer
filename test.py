@@ -2,6 +2,9 @@ from src.reframe import reframe
 import json
 import time
 
+# Default model to use for all tests
+MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+
 def test_all_functions():
     # Load API key from secrets file
     with open("secrets.json") as f:
@@ -28,7 +31,7 @@ def test_all_functions():
             post,
             client=client,
             client_type=client_type,
-            model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+            model=MODEL
         )
         print(f"{post_type}: {result}")
 
@@ -39,7 +42,7 @@ def test_all_functions():
             post,
             client=client,
             client_type=client_type,
-            model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+            model=MODEL
         )
         print(f"{post_type}: {result}")
 
@@ -65,7 +68,7 @@ def test_all_functions():
         sample_explanation,
         style_instruct,
         1,
-        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        model=MODEL,
         client=client,
         client_type=client_type
     )
@@ -77,7 +80,7 @@ def test_all_functions():
         sample_explanation,
         style_instruct,
         2,
-        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        model=MODEL,
         client=client,
         client_type=client_type
     )
@@ -88,7 +91,7 @@ def test_all_functions():
     emotion = reframe.get_emotion(
         test_text,
         client,
-        model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        model=MODEL,
         client_type=client_type
     )
     print(f"Detected emotion: {emotion}")
