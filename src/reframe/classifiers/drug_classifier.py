@@ -4,7 +4,22 @@ import time
 retry_wait_time = 5  # seconds between retries
 
 
-def get_drug_post(post, retries = 2, model = None, openai_client=None):
+def classify_if_drug(post, retries = 2, model = None, openai_client=None):
+    """
+    Classify if a post contains drug-related content.
+
+    Args:
+        post (str): The text content to classify
+        retries (int, optional): Number of API call retries. Defaults to 2.
+        model (str, optional): OpenAI model to use. Defaults to None.
+        openai_client: OpenAI client instance. Defaults to None.
+
+    Returns:
+        str: 'D' for drug-related, 'ND' for non-drug-related, 'skipped' on error
+
+    Raises:
+        ValueError: If openai_client is None
+    """
     prompt = f"""
     *Instructions for Labeling Drug References in Social Media Posts*
 
@@ -31,42 +46,7 @@ def get_drug_post(post, retries = 2, model = None, openai_client=None):
     6. **Response Requirement**:
     - Respond with either 'D' (Drug) or 'ND' (Non-Drug) based on these guidelines. No additional commentary is needed.
     """
-#     prompt = f"""
-#     *Instructions for Labeling Drug References in Social Media Posts*
 
-#     1. **Task Overview**: You are tasked with identifying any references to drugs or people who use drugs within each post. 
-
-#     2. **Substances Included**:
-#     - **Illicit Drugs**: Consider all controlled substances with no legal usage.
-#     - **Prescription Drugs**: Include drugs that are often abused even if they have legitimate medical uses.
-#     - **Other Substances**: Include any non-prescription substances known to be abused (e.g., inhalants, synthetic compounds).
-#     - **Exclude**: Do not consider tobacco, nicotine, or alcohol unless explicitly linked to drug use or addiction.
-
-#     3. **Drug Classes**:
-#     - **Narcotics**, **Stimulants**, **Depressants**, **Hallucinogens**
-#     - **Cannabis**, **Drugs of Concern** (e.g., DXM, fake pills, kratom)
-#     - **Designer Drugs** (e.g., bath salts, spice, K2)
-#     - **Treatment Substances**: Include methadone and other synthetic opiates used in treatment contexts.
-
-#     4. **Language Cues**:
-#     - Pay attention to slang and euphemisms for drugs.
-#     - Phrases indicating drug use effects, such as "stoned" or "high", should lead to a 'D' label.
-#     - The use of names referring to people who use drugs (e.g., junkie, addict) should also be considered as 'D'.
-#     - Be cautious with ambiguous references; if in doubt, label as 'ND'.
-
-#     5. **Classification**:
-#     - **D**: Label the post as 'D' if it discusses drugs, drug use, or people who use drugs, including any of the aforementioned substances and contexts.
-#     - **ND**: Label the post as 'ND' if it does not discuss drugs or drug use, and contains no references to the substances outlined above.
-
-#     6. *Clarification on Psychological References*:
-#     - Do not automatically classify posts as 'D' when they mention medical or psychological assessments, doctors, or treatments, unless there is a direct reference to drug use or medications known to be abused.
-#     - Be cautious with posts discussing mental health issues; label as 'D' only if there are explicit mentions of substances covered under the drug categories specified in the instructions.
-#     - Do not assume that mental health discussions imply drug use.
-    
-#    7.  *Response Requirement*:
-#     - Respond with a single label per post: either 'D' or 'ND'. Nothing more.
-
-#     """
     example1 = "I'm so high right now, I can't even feel my face. This is the best weed I've ever smoked."
     answer1 = "D"
     example2 = "I hope my junkie sister OD's or disappears out of our lives My sister is an alcoholic junkie who has 2 DUIs under her belt as well as loves taking Xanax and alcohol together and wreaking havoc for our family and even strangers."
