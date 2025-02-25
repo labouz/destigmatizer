@@ -1,4 +1,4 @@
-from src.reframe import reframe
+import reframe
 import json
 import time
 

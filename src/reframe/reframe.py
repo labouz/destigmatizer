@@ -33,7 +33,7 @@ def initialize(api_key=None, client=None, client_type="openai"):
     
 retry_wait_time = 5  # seconds between retries
 
-def create_completion(client, messages, model=None, temperature=0, client_type="openai"):
+def create_completion(client, messages, model=None, temperature=0, client_type="together"):
     """
     Create a chat completion using the specified client and model.
     
