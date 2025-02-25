@@ -49,7 +49,12 @@ def test_all_functions():
     # Test text analysis
     print("\nTesting text analysis...")
     sample_text = "This is a test sentence. It contains multiple parts. We want to analyze its style."
-    style_result = reframe.analyze_text_llm(sample_text, client)
+    style_result = reframe.analyze_text_llm(
+        sample_text, 
+        client, 
+        model=MODEL,
+        client_type=client_type
+    )
     print(f"Style analysis result: {style_result}")
 
     # Test rewriting

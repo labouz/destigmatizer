@@ -366,10 +366,11 @@ def mtld_LD(word_list):
     return (length_fwd + length_bwd) / 2
 
 # Modified analyze_text_llm function
-def analyze_text_llm(text, client):
+def analyze_text_llm(text, client, model=None, client_type="together"):
     # Tokenize sentences and words
     sentences = sent_tokenize(text)
-    emotion = get_emotion(text, client)
+    emotion = get_emotion(text, client, model=model, client_type=client_type)
+
     # Punctuation analysis
     punctuation_counts = {key: text.count(key) for key in string.punctuation}
     common_punctuation = ', '.join([p for p, count in punctuation_counts.items() if count > 0])
