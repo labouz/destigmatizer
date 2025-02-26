@@ -287,17 +287,46 @@ retry_wait_time = 5  # seconds between retries
 def rewrite_to_destigma(post, explanation, style_instruct, step, model=None, retries=2, client=None, client_type="openai"):
     # explanation in the form of Labeling: Uses the term 'junkies,' a derogatory label, Stereotyping: Portrays people who use drugs as irresponsible and a burden on society, Separation: Explicitly states that people with addiction do not belong in society, Discrimination: Advocates for stripping rights and marking individuals with addiction, suggesting they should be treated differently and excluded from societal opportunities.
 
-    if step == 1:
-        instruction = "Rewrite this post to remove any and all labeling."
-        definition = "Labeling includes the use of derogatory or othering language related to drug use/addiction."
-        explanation = explanation.split('Labeling: ')[1].split(',')[0]
-    else:
-        instruction = "Rewrite this post to remove any all instances of stereotyping, insinuations of separation, and/or discriminatory language."
-        definition = "Stereotyping reinforces negative generalizations about people who use drugs. Separation creates a divide between people who use drugs and those who don't. Discrimination implies or suggests unfair treatment based on drug use."
-        stereotype = explanation.split('Stereotyping: ')[1].split(',')[0]
-        separation = explanation.split('Separation: ')[1].split(',')[0]
-        discrimination = explanation.split('Discrimination: ')[1].split(',')[0]
-        explanation = stereotype + ';' + separation + ';' + discrimination
+    # Make the explanation parsing case-insensitive
+    explanation_lower = explanation.lower()
+    
+    try:
+        if step == 1:
+            instruction = "Rewrite this post to remove any and all labeling."
+            definition = "Labeling includes the use of derogatory or othering language related to drug use/addiction."
+            
+            # Extract labeling explanation - handle case insensitivity
+            if "labeling:" in explanation_lower:
+                labeling_part = explanation_lower.split("labeling:")[1].split(",")[0].strip()
+                explanation_part = labeling_part
+            else:
+                # Fallback if the expected structure isn't found
+                explanation_part = explanation_lower
+                
+        else:
+            instruction = "Rewrite this post to remove any all instances of stereotyping, insinuations of separation, and/or discriminatory language."
+            definition = "Stereotyping reinforces negative generalizations about people who use drugs. Separation creates a divide between people who use drugs and those who don't. Discrimination implies or suggests unfair treatment based on drug use."
+            
+            # Extract other parts with error handling
+            stereotype = ""
+            separation = ""
+            discrimination = ""
+            
+            if "stereotyping:" in explanation_lower:
+                stereotype = explanation_lower.split("stereotyping:")[1].split(",")[0].strip()
+            
+            if "separation:" in explanation_lower:
+                separation = explanation_lower.split("separation:")[1].split(",")[0].strip()
+                
+            if "discrimination:" in explanation_lower:
+                # Handle case where discrimination might be the last part (no trailing comma)
+                disc_parts = explanation_lower.split("discrimination:")[1].split(",")
+                discrimination = disc_parts[0].strip()
+            
+            explanation_part = f"{stereotype}; {separation}; {discrimination}"
+    except Exception as e:
+        print(f"Error parsing explanation: {e}")
+        explanation_part = explanation_lower
 
     prompt = f"""
     {instruction}; 
@@ -310,11 +339,7 @@ def rewrite_to_destigma(post, explanation, style_instruct, step, model=None, ret
 
     Do not include "Here is the rewritten post:" in your response. Just return the rewritten post. Nothing more.
     """
-    ex = f"This post {explanation}"
-    # example1 = "my mom is an addict."
-    # answer1 = "my mom has a substance use disorder."
-
-   
+    ex = f"This post {explanation_part}"
 
     while retries > 0:
         try:
