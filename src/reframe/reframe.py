@@ -285,48 +285,68 @@ retry_wait_time = 5  # seconds between retries
 
 
 def rewrite_to_destigma(post, explanation, style_instruct, step, model=None, retries=2, client=None, client_type="openai"):
-    # explanation in the form of Labeling: Uses the term 'junkies,' a derogatory label, Stereotyping: Portrays people who use drugs as irresponsible and a burden on society, Separation: Explicitly states that people with addiction do not belong in society, Discrimination: Advocates for stripping rights and marking individuals with addiction, suggesting they should be treated differently and excluded from societal opportunities.
-
-    # Make the explanation parsing case-insensitive
+    # Make the explanation parsing case-insensitive and handle different formats
     explanation_lower = explanation.lower()
     
-    try:
-        if step == 1:
-            instruction = "Rewrite this post to remove any and all labeling."
-            definition = "Labeling includes the use of derogatory or othering language related to drug use/addiction."
-            
-            # Extract labeling explanation - handle case insensitivity
-            if "labeling:" in explanation_lower:
-                labeling_part = explanation_lower.split("labeling:")[1].split(",")[0].strip()
-                explanation_part = labeling_part
-            else:
-                # Fallback if the expected structure isn't found
-                explanation_part = explanation_lower
-                
-        else:
-            instruction = "Rewrite this post to remove any all instances of stereotyping, insinuations of separation, and/or discriminatory language."
-            definition = "Stereotyping reinforces negative generalizations about people who use drugs. Separation creates a divide between people who use drugs and those who don't. Discrimination implies or suggests unfair treatment based on drug use."
-            
-            # Extract other parts with error handling
-            stereotype = ""
-            separation = ""
-            discrimination = ""
-            
-            if "stereotyping:" in explanation_lower:
-                stereotype = explanation_lower.split("stereotyping:")[1].split(",")[0].strip()
-            
-            if "separation:" in explanation_lower:
-                separation = explanation_lower.split("separation:")[1].split(",")[0].strip()
-                
-            if "discrimination:" in explanation_lower:
-                # Handle case where discrimination might be the last part (no trailing comma)
-                disc_parts = explanation_lower.split("discrimination:")[1].split(",")
-                discrimination = disc_parts[0].strip()
-            
-            explanation_part = f"{stereotype}; {separation}; {discrimination}"
-    except Exception as e:
-        print(f"Error parsing explanation: {e}")
-        explanation_part = explanation_lower
+    # Extract the different components using more robust parsing
+    labeling = ""
+    stereotyping = ""
+    separation = ""
+    discrimination = ""
+    
+    # Extract labeling
+    if "labeling:" in explanation_lower:
+        labeling_start = explanation_lower.find("labeling:") + len("labeling:")
+        labeling_end = explanation_lower.find(",", labeling_start)
+        if labeling_end == -1:  # If no comma found, take the rest of the string
+            labeling_end = len(explanation_lower)
+        labeling = explanation_lower[labeling_start:labeling_end].strip()
+    
+    # Extract stereotyping
+    if "stereotyping:" in explanation_lower:
+        stereo_start = explanation_lower.find("stereotyping:") + len("stereotyping:")
+        stereo_end = explanation_lower.find(",", stereo_start)
+        if stereo_end == -1:
+            stereo_end = len(explanation_lower)
+        stereotyping = explanation_lower[stereo_start:stereo_end].strip()
+    
+    # Extract separation
+    if "separation:" in explanation_lower:
+        sep_start = explanation_lower.find("separation:") + len("separation:")
+        sep_end = explanation_lower.find(",", sep_start)
+        if sep_end == -1:
+            sep_end = len(explanation_lower)
+        separation = explanation_lower[sep_start:sep_end].strip()
+    
+    # Extract discrimination
+    if "discrimination:" in explanation_lower:
+        disc_start = explanation_lower.find("discrimination:") + len("discrimination:")
+        disc_end = explanation_lower.find(",", disc_start)
+        if disc_end == -1:
+            disc_end = len(explanation_lower)
+        discrimination = explanation_lower[disc_start:disc_end].strip()
+    
+    # Use the extracted components based on the step
+    if step == 1:
+        instruction = "Rewrite this post to remove any and all labeling."
+        definition = "Labeling includes the use of derogatory or othering language related to drug use/addiction."
+        explanation_part = labeling if labeling else explanation_lower
+        # print(f"Step 1 - Using labeling component: '{explanation_part}'")
+    else:
+        instruction = "Rewrite this post to remove any and all instances of stereotyping, insinuations of separation, and/or discriminatory language."
+        definition = "Stereotyping reinforces negative generalizations about people who use drugs. Separation creates a divide between people who use drugs and those who don't. Discrimination implies or suggests unfair treatment based on drug use."
+        
+        # Combine the non-labeling components for step 2
+        components = []
+        if stereotyping:
+            components.append(f"Stereotyping: {stereotyping}")
+        if separation:
+            components.append(f"Separation: {separation}")
+        if discrimination:
+            components.append(f"Discrimination: {discrimination}")
+        
+        explanation_part = "; ".join(components) if components else explanation_lower
+        # print(f"Step 2 - Using components: '{explanation_part}'")
 
     prompt = f"""
     {instruction}; 
@@ -339,7 +359,11 @@ def rewrite_to_destigma(post, explanation, style_instruct, step, model=None, ret
 
     Do not include "Here is the rewritten post:" in your response. Just return the rewritten post. Nothing more.
     """
-    ex = f"This post {explanation_part}"
+    ex = f"This post uses {explanation_part}"
+    
+    # print(f"Sending prompt with instruction: '{instruction}'")
+    # print(f"Full explanation text being used: '{ex}'")
+    # print(f"Style instruction: '{style_instruct}'")
 
     while retries > 0:
         try:
