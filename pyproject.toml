@@ -25,6 +25,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+
+[project.scripts]
+reframe-test = "reframe.tests.run_all_tests:main"
+
 license = {text = "BSD-3-Clause"}
 
 [project.urls]
