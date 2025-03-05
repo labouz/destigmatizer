@@ -1,7 +1,7 @@
-# the script for labeling a post as durg-related or not
 import time
 from openai import OpenAI
 from together import Together
+import anthropic
 
 def initialize(api_key=None, client=None, client_type=None):
     """
@@ -25,6 +25,8 @@ def initialize(api_key=None, client=None, client_type=None):
             return OpenAI(api_key=api_key), client_type
         elif client_type.lower() == "together":
             return Together(api_key=api_key), client_type
+        elif client_type.lower() == "claude":
+            return anthropic.Anthropic(api_key=api_key), client_type
         else:
             raise ValueError(f"Unsupported client type: {client_type}")
     else:
@@ -33,7 +35,7 @@ def initialize(api_key=None, client=None, client_type=None):
     
 retry_wait_time = 5  # seconds between retries
 
-def create_completion(client, messages, model=None, temperature=0, client_type="together"):
+def create_completion(client, messages, model=None, temperature=0, client_type=None):
     """
     Create a chat completion using the specified client and model.
     
@@ -42,17 +44,24 @@ def create_completion(client, messages, model=None, temperature=0, client_type="
         messages: List of message dictionaries
         model: Model identifier
         temperature: Sampling temperature
-        client_type: Type of client ("openai" or "together")
+        client_type: Type of client ("openai" or "together" or "claude")
         
     Returns:
         str: The generated response content
     """
     try:
-        response = client.chat.completions.create(
-            messages=messages,
-            model=model,
-            temperature=temperature
-        )
+        if client_type == "openai" or "together":
+            response = client.chat.completions.create(
+                messages=messages,
+                model=model,
+                temperature=temperature
+            )
+        elif client_type == "claude":
+            response = client.messages.create(
+                messages=messages,
+                model=model,
+                temperature=temperature
+            )
         return response.choices[0].message.content
     except Exception as e:
         raise Exception(f"Error creating completion: {str(e)}")
