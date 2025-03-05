@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 
 # Api keys
-secrets.json
-
+**/secrets.json
 # C extensions
 *.so
 

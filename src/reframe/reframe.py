@@ -5,7 +5,7 @@ from together import Together
 
 def initialize(api_key=None, client=None, client_type="openai"):
     """
-    Initialize and return a client for the Reframe library.
+    Initialize and return a client for the Reframe library.x
     
     Args:
         api_key (str, optional): API key for the language model service
