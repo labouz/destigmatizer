@@ -5,9 +5,10 @@ import argparse
 import pytest
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
-from tests import (
+# Import test modules correctly
+from src.reframe.tests import (
     test_drug_classifier,
     test_stigma_classifier, 
     test_text_analyzer,
@@ -15,7 +16,7 @@ from tests import (
     test_emotion_detector
 )
 
-def run_all_tests(api_key=None, model=None, client_type="openai"):
+def run_all_tests(api_key=None, model=None, client_type=None):
     """
     Run all tests in sequence.
     

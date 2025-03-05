@@ -3,7 +3,7 @@ import time
 from openai import OpenAI
 from together import Together
 
-def initialize(api_key=None, client=None, client_type="openai"):
+def initialize(api_key=None, client=None, client_type=None):
     """
     Initialize and return a client for the Reframe library.x
     
@@ -48,10 +48,6 @@ def create_completion(client, messages, model=None, temperature=0, client_type="
         str: The generated response content
     """
     try:
-        # Set default model based on client type
-        if not model:
-            model = "gpt-4o" if client_type == "openai" else "meta-llama/Meta Llama 3.1 70B Instruct Turbo"
-            
         response = client.chat.completions.create(
             messages=messages,
             model=model,

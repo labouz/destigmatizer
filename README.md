@@ -21,4 +21,4 @@ reframe-test --client_type together --model "meta-llama/Meta-Llama-3.1"
 ### Running test scripts directly
 ```bash
 # From the root directory
-python -m reframe.tests.run_all_tests
+python3 -m reframe.tests.run_all_tests

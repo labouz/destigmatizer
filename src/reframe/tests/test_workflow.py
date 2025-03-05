@@ -1,44 +1,36 @@
-import reframe
+import sys
+import os
 import json
+import argparse
 
-# Default model to use for all tests
-Llama_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
-OpenAi_MODEL = "gpt-4o"
-MODEL = Llama_MODEL
+# Add the project root to the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
-def test_workflow(api_key=None, model=None):
+from src.reframe import reframe
+
+def test_workflow(api_key=None, model=None, client_type=None):
     """
     Test the reframe workflow.
     
     Args:
-        api_key (str, optional): API key for LLM service. Falls back to secrets.json if not provided.
-        model (str, optional): Model name to use for testing. Defaults to global MODEL.
+        api_key (str, optional): API key for the LLM service
+        model (str, optional): Model name to use for testing
+        client_type (str, optional): Type of client ("openai", "together" or "Claude")
     """
-    # Use provided model or fall back to default
-    use_model = model or MODEL
-    
-    # Get API key either from parameter or secrets file
-    if api_key is None:
-        try:
-            with open("secrets.json") as f:
-                secrets = json.load(f)
-                api_key = secrets.get("TOGETHER_API_KEY")
-        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-            print(f"Error loading API key from secrets.json: {e}")
-            print("Please provide an API key as a parameter")
-            return
-    
-    if not api_key:
-        print("API key is required. Please provide it as a parameter")
+    # Initialize client
+    try:
+        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        print("✓ Client initialization successful")
+    except Exception as e:
+        print(f"Error initializing client: {e}")
         return
 
-    # Test initialization
-    print("\nTesting initialization...")
-    client, client_type = reframe.initialize(api_key=api_key, client_type="together")
-    print("✓ Initialization successful")
+    # Print model information
+    print(f"Using model: {model or 'default'} with client type: {client_type}")
 
-    # Test post with workflow
+    # Test post
     test_post = "junkies are causing problems in our neighborhood"
+    print(f"\nTesting workflow on post: \"{test_post}\"")
     
     # Test drug classification
     print("\nTesting drug classification...")
@@ -46,7 +38,7 @@ def test_workflow(api_key=None, model=None):
         test_post,
         client=client,
         client_type=client_type,
-        model=use_model
+        model=model
     )
     print(f"Drug classification result: {drug_result}")
     
@@ -56,12 +48,11 @@ def test_workflow(api_key=None, model=None):
         test_post,
         client=client,
         client_type=client_type,
-        model=use_model
+        model=model
     )
     print(f"Stigma classification result: {stigma_result}")
     
     # Extract label and explanation from stigma classification result
-    # Assuming the result format is "label, explanation"
     if ', ' in stigma_result:
         label, explanation = stigma_result.split(', ', 1)
     else:
@@ -76,7 +67,7 @@ def test_workflow(api_key=None, model=None):
     style_result = reframe.analyze_text_llm(
         test_post, 
         client, 
-        model=use_model,
+        model=model,
         client_type=client_type
     )
     print(f"Style analysis result: {style_result}")
@@ -86,7 +77,7 @@ def test_workflow(api_key=None, model=None):
     emotion = reframe.get_emotion(
         test_post,
         client,
-        model=use_model,
+        model=model,
         client_type=client_type
     )
     print(f"Detected emotion: {emotion}")
@@ -94,13 +85,12 @@ def test_workflow(api_key=None, model=None):
     # Step 4: Rewriting with actual explanation and style
     print("\nStep 4: Rewriting process...")
     # First rewrite
-    
     rewrite_step1 = reframe.rewrite_to_destigma(
         test_post,
         explanation,
         str(style_result),
         1,
-        model=use_model,
+        model=model,
         client=client,
         client_type=client_type
     )
@@ -112,11 +102,32 @@ def test_workflow(api_key=None, model=None):
         explanation,
         str(style_result),
         2,
-        model=use_model,
+        model=model,
         client=client,
         client_type=client_type
     )
     print(f"Rewrite step 2 result: {rewrite_step2}")
 
 if __name__ == "__main__":
-    test_workflow()
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Test reframe workflow functionality')
+    parser.add_argument('--api_key', help='API key for LLM service')
+    parser.add_argument('--model', help='Model name to use for testing')
+    parser.add_argument('--client_type', default='together', choices=['openai', 'together'], 
+                        help='Client type (openai or together)')
+    
+    args = parser.parse_args()
+    
+    # Get API key either from parameter or secrets file
+    api_key = args.api_key
+    if api_key is None:
+        try:
+            with open("secrets.json") as f:
+                secrets = json.load(f)
+                api_key = secrets.get("OPENAI_API_KEY") if args.client_type == "openai" else secrets.get("TOGETHER_API_KEY")
+        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+            print(f"Error loading API key from secrets.json: {e}")
+            print("Please provide an API key using --api_key")
+            sys.exit(1)
+    
+    test_workflow(api_key=api_key, model=args.model, client_type=args.client_type)
