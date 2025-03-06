@@ -4,10 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reframe"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
-    "openai",
-    "together",
+    "nltk",
 ]
 requires-python = ">=3.8"
 authors = [
@@ -26,10 +25,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+license = {text = "BSD-3-Clause"}
+
 [project.scripts]
 reframe-test = "reframe.tests.run_all_tests:main"
 
-license = {text = "BSD-3-Clause"}
 
 [project.urls]
 Homepage = "https://github.com/labouz/reframe"
