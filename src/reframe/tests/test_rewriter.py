@@ -17,7 +17,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = reframe.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -45,8 +45,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
     style_result = reframe.analyze_text_llm(
         test_cases[0]["text"],
         client,
-        model=model,
-        client_type=client_type
+        model=model
     )
     print(f"Style analysis result: {style_result}")
     style_instruct = str(style_result)
@@ -65,8 +64,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
             style_instruct,
             step=1,
             model=model,
-            client=client,
-            client_type=client_type
+            client=client
         )
         print(f"Rewrite step 1 result: {rewrite_step1}")
         
@@ -78,8 +76,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
             style_instruct,
             step=2,
             model=model,
-            client=client,
-            client_type=client_type
+            client=client
         )
         print(f"Rewrite step 2 result: {rewrite_step2}")
         

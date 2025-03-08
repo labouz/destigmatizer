@@ -17,7 +17,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = reframe.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -35,7 +35,6 @@ def test_workflow(api_key=None, model=None, client_type=None):
     drug_result = reframe.classify_if_drug(
         test_post,
         client=client,
-        client_type=client_type,
         model=model
     )
     print(f"Drug classification result: {drug_result}")
@@ -45,7 +44,6 @@ def test_workflow(api_key=None, model=None, client_type=None):
     stigma_result = reframe.classify_if_stigma(
         test_post,
         client=client,
-        client_type=client_type,
         model=model
     )
     print(f"Stigma classification result: {stigma_result}")
@@ -65,8 +63,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     style_result = reframe.analyze_text_llm(
         test_post, 
         client, 
-        model=model,
-        client_type=client_type
+        model=model
     )
     print(f"Style analysis result: {style_result}")
 
@@ -75,8 +72,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     emotion = reframe.get_emotion(
         test_post,
         client,
-        model=model,
-        client_type=client_type
+        model=model
     )
     print(f"Detected emotion: {emotion}")
 
@@ -89,8 +85,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
         str(style_result),
         1,
         model=model,
-        client=client,
-        client_type=client_type
+        client=client
     )
     print(f"Rewrite step 1 result: {rewrite_step1}")
 
@@ -101,8 +96,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
         str(style_result),
         2,
         model=model,
-        client=client,
-        client_type=client_type
+        client=client
     )
     print(f"Rewrite step 2 result: {rewrite_step2}")
 

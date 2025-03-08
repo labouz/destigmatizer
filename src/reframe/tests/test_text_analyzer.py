@@ -17,7 +17,7 @@ def test_text_analyzer(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = reframe.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -41,8 +41,7 @@ def test_text_analyzer(api_key=None, model=None, client_type=None):
         result = reframe.analyze_text_llm(
             text,
             client,
-            model=model,
-            client_type=client_type
+            model=model
         )
         print(f"Style analysis result: {result}")
 

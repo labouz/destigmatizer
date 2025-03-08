@@ -1,5 +1,3 @@
-import sys
-import argparse
 import reframe
 
 from reframe.tests.utils import get_api_key_for_testing, get_model_for_testing, setup_test_argument_parser, parse_test_args
@@ -15,8 +13,10 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = reframe.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
+        
+        
     except Exception as e:
         print(f"Error initializing client: {e}")
         return
@@ -39,7 +39,6 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
         result = reframe.classify_if_drug(
             post,
             client=client,
-            client_type=client_type,
             model=model
         )
         print(f"{post_type}: {result}")

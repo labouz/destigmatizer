@@ -17,8 +17,9 @@ def test_emotion_detector(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client, client_type = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = reframe.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
+        
     except Exception as e:
         print(f"Error initializing client: {e}")
         return
@@ -42,8 +43,7 @@ def test_emotion_detector(api_key=None, model=None, client_type=None):
         emotion = reframe.get_emotion(
             text,
             client,
-            model=model,
-            client_type=client_type
+            model=model
         )
         print(f"Detected emotion: {emotion}")
 

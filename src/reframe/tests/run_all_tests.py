@@ -1,18 +1,12 @@
-import sys
-import os
-import argparse
+# Import test functions directly rather than modules
+from reframe.tests.test_drug_classifier import test_drug_classifier
+from reframe.tests.test_stigma_classifier import test_stigma_classifier 
+from reframe.tests.test_text_analyzer import test_text_analyzer
+from reframe.tests.test_rewriter import test_rewriter
+from reframe.tests.test_emotion_detector import test_emotion_detector
+from reframe.tests.test_workflow import test_workflow
 
-# Import test modules correctly
-from reframe.tests import (
-    test_drug_classifier,
-    test_stigma_classifier, 
-    test_text_analyzer,
-    test_rewriter,
-    test_emotion_detector,
-    test_workflow
-)
-
-from reframe.tests.utils import get_api_key_for_testing, setup_test_argument_parser, parse_test_args
+from reframe.tests.utils import get_api_key_for_testing, setup_test_argument_parser, get_model_for_testing
 
 
 def run_all_tests(api_key=None, model=None, client_type=None):
@@ -66,6 +60,8 @@ def main():
     
     # Parse arguments and get API key, model, and client type
     args = parser.parse_args()
+    if args.model is None:
+        args.model = get_model_for_testing(args.model, args.client_type)
     api_key = get_api_key_for_testing(args.api_key, args.client_type)
     
     # Run in script mode

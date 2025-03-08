@@ -1,7 +1,7 @@
 """Core functionality for the reframe package."""
 
 from typing import Tuple, Dict, Any, Optional, Union
-from .clients import get_client, LLMClient, detect_client_type
+from .clients import get_client
 from .classifiers import DrugClassifier, StigmaClassifier
 from .analyzers import StyleAnalyzer, EmotionAnalyzer, LLMBasedAnalyzer
 from .rewriters import DestigmatizingRewriter

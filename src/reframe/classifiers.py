@@ -4,8 +4,6 @@ import time
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
-from .clients import LLMClient, detect_client_type
-
 
 class BaseClassifier(ABC):
     """Abstract base class for text classifiers."""
