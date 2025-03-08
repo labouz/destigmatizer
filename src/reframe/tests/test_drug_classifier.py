@@ -15,7 +15,7 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
     Args:
         api_key (str, optional): API key for the LLM service
         model (str, optional): Model name to use for testing
-        client_type (str, optional): Type of client ("openai" or "together")
+        client_type (str, optional): Type of client ("openai", "together", "claude", etc.)
     """
     # Initialize client
     try:
@@ -53,21 +53,40 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test drug classification functionality')
     parser.add_argument('--api_key', help='API key for LLM service')
     parser.add_argument('--model', help='Model name to use for testing')
-    parser.add_argument('--client_type', default='openai', choices=['openai', 'together'], 
-                        help='Client type (openai or together)')
+    parser.add_argument('--client_type', default='openai', 
+                        help='Client type (e.g., openai, together, claude)')
     
     args = parser.parse_args()
     
-    # Get API key either from parameter or secrets file
+    # Get API key either from parameter, environment variables, or secrets file
     api_key = args.api_key
     if api_key is None:
-        try:
-            with open("secrets.json") as f:
-                secrets = json.load(f)
-                api_key = secrets.get("OPENAI_API_KEY") if args.client_type == "openai" else secrets.get("TOGETHER_API_KEY")
-        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-            print(f"Error loading API key from secrets.json: {e}")
-            print("Please provide an API key using --api_key")
+        # First try to get from environment variables
+        if args.client_type.lower() == "openai":
+            api_key = os.environ.get("OPENAI_API_KEY")
+        elif args.client_type.lower() == "together":
+            api_key = os.environ.get("TOGETHER_API_KEY")
+        elif args.client_type.lower() == "claude":
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
+        
+        # If not found in env vars, try secrets file
+        if api_key is None:
+            try:
+                with open("secrets.json") as f:
+                    secrets = json.load(f)
+                    if args.client_type.lower() == "openai":
+                        api_key = secrets.get("OPENAI_API_KEY")
+                    elif args.client_type.lower() == "together":
+                        api_key = secrets.get("TOGETHER_API_KEY")
+                    elif args.client_type.lower() == "claude":
+                        api_key = secrets.get("ANTHROPIC_API_KEY")
+            except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+                print(f"Error loading API key from secrets.json: {e}")
+                print("Please provide an API key using --api_key or set the appropriate environment variable")
+                sys.exit(1)
+                
+        if api_key is None:
+            print(f"No API key found for {args.client_type}. Please provide an API key.")
             sys.exit(1)
     
     test_drug_classifier(api_key=api_key, model=args.model, client_type=args.client_type)

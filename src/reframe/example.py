@@ -303,7 +303,7 @@ if __name__ == "__main__":
     parser.add_argument('example', choices=['all', 'classify_drug', 'classify_stigma', 
                                            'analyze_text', 'rewrite_content', 'emotion_detection'],
                         help='Which example to run')
-    parser.add_argument('--client', choices=['openai', 'together', 'claude'],
+    parser.add_argument('--client_type', choices=['openai', 'together', 'claude'],
                         help='Client type to use (openai, together, claude)')
     parser.add_argument('--model', help='Specific model to use')
     

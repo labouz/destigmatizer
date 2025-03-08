@@ -35,7 +35,7 @@ def initialize(api_key=None, client=None, client_type=None):
     
 retry_wait_time = 5  # seconds between retries
 
-def create_completion(client, messages, model=None, temperature=0, client_type=None):
+def create_completion(client, messages, model=None, temperature=0, client_type=None, max_tokens=1000):
     """
     Create a chat completion using the specified client and model.
     
@@ -45,26 +45,48 @@ def create_completion(client, messages, model=None, temperature=0, client_type=N
         model: Model identifier
         temperature: Sampling temperature
         client_type: Type of client ("openai" or "together" or "claude")
+        max_tokens: Maximum number of tokens in the response (required for Claude)
         
     Returns:
         str: The generated response content
     """
     try:
-        if client_type == "openai" or "together":
+        if client_type.lower() == "claude":
+            # Convert the messages format to what Claude expects
+            system_message = next((m["content"] for m in messages if m["role"] == "system"), None)
+            
+            # Prepare the messages for Claude API by restructuring
+            claude_messages = []
+            for m in messages:
+                if m["role"] == "system":
+                    continue  # Skip system messages as we handle them separately
+                claude_messages.append({
+                    "role": m["role"],
+                    "content": m["content"]
+                })
+            
+            response = client.messages.create(
+                model=model,
+                system=system_message,
+                messages=claude_messages,
+                temperature=temperature,
+                max_tokens=max_tokens  # Add the required max_tokens parameter
+            )
+            return response.content[0].text
+        elif client_type and (client_type.lower() == "openai" or client_type.lower() == "together"):
             response = client.chat.completions.create(
                 messages=messages,
                 model=model,
                 temperature=temperature
             )
-        elif client_type == "claude":
-            response = client.messages.create(
-                messages=messages,
-                model=model,
-                temperature=temperature
-            )
-        return response.choices[0].message.content
+            return response.choices[0].message.content
+        else:
+            raise ValueError(f"Unsupported client type: {client_type}")
     except Exception as e:
-        raise Exception(f"Error creating completion: {str(e)}")
+        raise e
+    except Exception as e:
+        # Add client type to error message for easier debugging
+        raise Exception(f"Error creating completion with {client_type} client: {str(e)}")
 
 def classify_if_drug(post, retries = 2, model = None, client=None, client_type="openai"):
     """
