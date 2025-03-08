@@ -2,11 +2,7 @@ import sys
 import os
 import json
 import argparse
-
-# Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from src.reframe import reframe
+import reframe
 
 def test_rewriter(api_key=None, model=None, client_type=None):
     """

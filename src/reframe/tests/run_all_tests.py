@@ -4,11 +4,9 @@ import json
 import argparse
 import pytest
 
-# Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 # Import test modules correctly
-from src.reframe.tests import (
+from reframe.tests import (
     test_drug_classifier,
     test_stigma_classifier, 
     test_text_analyzer,
