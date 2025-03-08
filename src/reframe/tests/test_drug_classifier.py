@@ -1,12 +1,8 @@
 import sys
-import os
-import json
 import argparse
-
-# Add the project root to the Python path
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
 import reframe
+
+from reframe.tests.utils import get_api_key_for_testing, get_model_for_testing, setup_test_argument_parser, parse_test_args
 
 def test_drug_classifier(api_key=None, model=None, client_type=None):
     """
@@ -50,43 +46,10 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
 
 if __name__ == "__main__":
     # Set up argument parser
-    parser = argparse.ArgumentParser(description='Test drug classification functionality')
-    parser.add_argument('--api_key', help='API key for LLM service')
-    parser.add_argument('--model', help='Model name to use for testing')
-    parser.add_argument('--client_type', default='openai', 
-                        help='Client type (e.g., openai, together, claude)')
+    parser = setup_test_argument_parser('Test drug classification functionality')
     
-    args = parser.parse_args()
+    # Parse arguments and get API key, model, and client type
+    api_key, model, client_type = parse_test_args(parser)
     
-    # Get API key either from parameter, environment variables, or secrets file
-    api_key = args.api_key
-    if api_key is None:
-        # First try to get from environment variables
-        if args.client_type.lower() == "openai":
-            api_key = os.environ.get("OPENAI_API_KEY")
-        elif args.client_type.lower() == "together":
-            api_key = os.environ.get("TOGETHER_API_KEY")
-        elif args.client_type.lower() == "claude":
-            api_key = os.environ.get("ANTHROPIC_API_KEY")
-        
-        # If not found in env vars, try secrets file
-        if api_key is None:
-            try:
-                with open("secrets.json") as f:
-                    secrets = json.load(f)
-                    if args.client_type.lower() == "openai":
-                        api_key = secrets.get("OPENAI_API_KEY")
-                    elif args.client_type.lower() == "together":
-                        api_key = secrets.get("TOGETHER_API_KEY")
-                    elif args.client_type.lower() == "claude":
-                        api_key = secrets.get("ANTHROPIC_API_KEY")
-            except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-                print(f"Error loading API key from secrets.json: {e}")
-                print("Please provide an API key using --api_key or set the appropriate environment variable")
-                sys.exit(1)
-                
-        if api_key is None:
-            print(f"No API key found for {args.client_type}. Please provide an API key.")
-            sys.exit(1)
-    
-    test_drug_classifier(api_key=api_key, model=args.model, client_type=args.client_type)
+    # Run the test
+    test_drug_classifier(api_key=api_key, model=model, client_type=client_type)
