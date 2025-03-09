@@ -60,7 +60,7 @@ def get_default_model(client_type: str) -> Optional[str]:
     elif client_type.lower() == "together":
         return "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
     elif client_type.lower() == "claude":
-        return "claude-3-haiku-20240307"
+        return "claude-3-5-haiku-20241022"
     return None
 
 
