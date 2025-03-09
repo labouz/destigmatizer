@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reframe"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
     "nltk",
 ]
@@ -17,7 +17,7 @@ authors = [
 maintainers = [
   {name = "Layla Bouzoubaa", email="author@example.com"}
 ]
-description = "A destigmatizing utility for langauge"
+description = "An LLM powered destigmatizing utility for langauge processing"
 readme = "README.md"
 
 classifiers = [
