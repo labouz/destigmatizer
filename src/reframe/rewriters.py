@@ -3,6 +3,7 @@
 import time
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
+from .utils import get_model_mapping
 
 from .clients import LLMClient, detect_client_type
 
@@ -97,6 +98,9 @@ class DestigmatizingRewriter(TextRewriter):
         Returns:
             str: Rewritten text
         """
+        # Determine client type and map model if needed
+        client_type = detect_client_type(self.client)
+        mapped_model = get_model_mapping(model, client_type)
         components = self._parse_explanation(explanation)
         
         if step == 1:
@@ -138,7 +142,7 @@ class DestigmatizingRewriter(TextRewriter):
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": text + ";" + ex + ";" + style_instruct}
                     ],
-                    model=model
+                    model=mapped_model
                 )
                 return rewritten.lower().strip()
                 

@@ -32,6 +32,8 @@ import argparse
 from typing import Optional, Dict, Any
 from reframe import core
 from reframe.clients import get_client
+from reframe.utils import get_model_mapping, get_default_model
+
 
 # Default models to use for examples
 LLAMA_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
@@ -67,15 +69,11 @@ def get_example_client(client_type: str = None, api_key: str = None, model: str 
             from reframe.clients import detect_client_type
             client_type = detect_client_type(client)
             
-            # Set default model based on detected client type
-            if model is None:
-                if client_type == "openai":
-                    model = OPENAI_MODEL
-                elif client_type == "together":
-                    model = LLAMA_MODEL
-                elif client_type == "claude":
-                    model = CLAUDE_MODEL
-    
+            # Use get_model_mapping for model selection
+        if model is None:
+            model = get_default_model(client_type)
+        else:
+            model = get_model_mapping(model, client_type)
     except ValueError as e:
         print(f"Error initializing client: {e}")
         sys.exit(1)

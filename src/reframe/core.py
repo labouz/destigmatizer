@@ -5,6 +5,8 @@ from .clients import get_client
 from .classifiers import DrugClassifier, StigmaClassifier
 from .analyzers import StyleAnalyzer, EmotionAnalyzer, LLMBasedAnalyzer
 from .rewriters import DestigmatizingRewriter
+from .clients import detect_client_type
+from .utils import get_model_mapping
 
 
 def initialize(api_key: Optional[str] = None, client: Optional[Any] = None, 
@@ -123,12 +125,15 @@ def rewrite_to_destigma(text: str, explanation: str, style_instruct: str, step: 
     Returns:
         str: Rewritten text
     """
+    client_type = detect_client_type(client)
+    mapped_model = get_model_mapping(model, client_type)
+    
     rewriter = DestigmatizingRewriter(client)
     return rewriter.rewrite(
         text=text,
         explanation=explanation,
         style_instruct=style_instruct,
         step=step,
-        model=model,
+        model=mapped_model,
         retries=retries
     )

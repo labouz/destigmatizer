@@ -44,24 +44,65 @@ def load_api_key(client_type: str) -> Optional[str]:
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return None
 
+def get_model_mapping(model_name: Optional[str] = None, client_type: str = "openai") -> str:
+    """
+    Map generic model names to provider-specific model names.
+    
+    Args:
+        model_name: Generic model name like "small", "medium", "large"
+        client_type: Type of client ("openai", "together", "claude")
+        
+    Returns:
+        str: Provider-specific model name
+    """
+    # Define mappings from generic model types to specific models
+    model_mappings = {
+        "small": {
+            "openai": "gpt-4o-mini",
+            "together": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            "claude": "claude-3-haiku-20241022",
+        },
+        "medium": {
+            "openai": "gpt-4o",
+            "together": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+            "claude": "claude-3-5-sonnet-20240620",
+        },
+        "large": {
+            "openai": "gpt-4o-2024-05-13",
+            "together": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+            "claude": "claude-3-opus-20240229",
+        }
+    }
+    
+    # If a generic name is provided, map it
+    if model_name in model_mappings:
+        return model_mappings[model_name].get(client_type, get_default_model(client_type))
+    
+    # If a specific model name is provided, use it directly
+    if model_name:
+        return model_name
+    
+    # Otherwise return the default for the client type
+    return get_default_model(client_type)
 
 def get_default_model(client_type: str) -> Optional[str]:
     """
     Get the default model for a given client type.
     
     Args:
-        client_type: Type of client ("openai", "together", or "claude")
+        client_type: Type of client ("openai", "together", "claude", or other providers)
         
     Returns:
         str: Default model name for the client type, None if client type is unsupported
     """
-    if client_type.lower() == "openai":
-        return "gpt-4o"
-    elif client_type.lower() == "together":
-        return "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
-    elif client_type.lower() == "claude":
-        return "claude-3-5-haiku-20241022"
-    return None
+    client_defaults = {
+        "openai": "gpt-4o",
+        "together": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+        "claude": "claude-3-5-haiku-20241022",
+        # Add other providers as needed
+    }
+    
+    return client_defaults.get(client_type.lower())
 
 
 def determine_client_type() -> Optional[str]:
