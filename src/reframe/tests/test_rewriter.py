@@ -57,32 +57,16 @@ def test_rewriter(api_key=None, model=None, client_type=None):
         print(f"Explanation: {case['explanation']}")
         
         # Step 1: Remove labeling
-        print("\nStep 1: Remove labeling...")
-        rewrite_step1 = reframe.rewrite_to_destigma(
+        rewrite_res = reframe.rewrite_to_destigma(
             case["text"],
             case["explanation"],
             style_instruct,
-            step=1,
             model=model,
             client=client
         )
-        print(f"Rewrite step 1 result: {rewrite_step1}")
-        
-        # Step 2: Remove stereotyping, separation, and discrimination
-        print("\nStep 2: Remove stereotyping, separation, and discrimination...")
-        rewrite_step2 = reframe.rewrite_to_destigma(
-            rewrite_step1,
-            case["explanation"],
-            style_instruct,
-            step=2,
-            model=model,
-            client=client
-        )
-        print(f"Rewrite step 2 result: {rewrite_step2}")
-        
         print(f"\nComparison:")
         print(f"Original: {case['text']}")
-        print(f"Final: {rewrite_step2}")
+        print(f"Final: {rewrite_res}")
 
 if __name__ == "__main__":
     # Set up argument parser

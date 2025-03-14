@@ -107,7 +107,7 @@ def get_emotion(text: str, client: Any, model: Optional[str] = None,
     return result.get("primary_emotion", "unknown")
 
 
-def rewrite_to_destigma(text: str, explanation: str, style_instruct: str, step: int,
+def rewrite_to_destigma(text: str, explanation: str, style_instruct: str,
                         model: Optional[str] = None, client: Any = None, 
                         retries: int = 2) -> str:
     """
@@ -133,7 +133,6 @@ def rewrite_to_destigma(text: str, explanation: str, style_instruct: str, step: 
         text=text,
         explanation=explanation,
         style_instruct=style_instruct,
-        step=step,
         model=mapped_model,
         retries=retries
     )

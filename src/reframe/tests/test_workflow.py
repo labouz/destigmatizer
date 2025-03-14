@@ -79,26 +79,15 @@ def test_workflow(api_key=None, model=None, client_type=None):
     # Step 4: Rewriting with actual explanation and style
     print("\nStep 4: Rewriting process...")
     # First rewrite
-    rewrite_step1 = reframe.rewrite_to_destigma(
+    rewrite_res = reframe.rewrite_to_destigma(
         test_post,
         explanation,
         str(style_result),
-        1,
         model=model,
         client=client
     )
-    print(f"Rewrite step 1 result: {rewrite_step1}")
-
-    # Second rewrite using the output from first rewrite
-    rewrite_step2 = reframe.rewrite_to_destigma(
-        rewrite_step1,
-        explanation,
-        str(style_result),
-        2,
-        model=model,
-        client=client
-    )
-    print(f"Rewrite step 2 result: {rewrite_step2}")
+   
+    print(f"Rewrite result: {rewrite_res}")
 
 if __name__ == "__main__":
     # Set up argument parser

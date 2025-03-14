@@ -83,7 +83,7 @@ class DestigmatizingRewriter(TextRewriter):
         
         return components
     
-    def rewrite(self, text: str, explanation: str, style_instruct: str, step: int = 1, 
+    def rewrite(self, text: str, explanation: str, style_instruct: str, 
                model: Optional[str] = None, retries: int = 2) -> str:
         """Rewrite text to remove stigmatizing language.
         
@@ -91,7 +91,6 @@ class DestigmatizingRewriter(TextRewriter):
             text: Text to rewrite
             explanation: Explanation of stigma from classifier
             style_instruct: Style instructions to maintain
-            step: Rewriting step (1=remove labeling, 2=remove stereotyping/separation/discrimination)
             model: Model to use for rewriting
             retries: Number of retries on failure
             
@@ -103,7 +102,48 @@ class DestigmatizingRewriter(TextRewriter):
         mapped_model = get_model_mapping(model, client_type)
         components = self._parse_explanation(explanation)
         
-        if step == 1:
+        # First pass: remove labeling
+        intermediate_text = self._perform_rewrite_pass(
+            text=text,
+            components=components,
+            explanation=explanation,
+            style_instruct=style_instruct,
+            mapped_model=mapped_model,
+            retries=retries,
+            pass_type=1
+        )
+        
+        # Second pass: remove stereotyping, separation, and discrimination
+        final_text = self._perform_rewrite_pass(
+            text=intermediate_text,
+            components=components,
+            explanation=explanation,
+            style_instruct=style_instruct,
+            mapped_model=mapped_model,
+            retries=retries,
+            pass_type=2
+        )
+        
+        return final_text
+    
+    def _perform_rewrite_pass(self, text: str, components: Dict, explanation: str, 
+                              style_instruct: str, mapped_model: str, retries: int, 
+                              pass_type: int) -> str:
+        """Perform a single rewrite pass.
+        
+        Args:
+            text: Text to rewrite
+            components: Parsed explanation components
+            explanation: Original explanation text
+            style_instruct: Style instructions to maintain
+            mapped_model: Mapped model name for current client
+            retries: Number of retries on failure
+            pass_type: Pass type (1=remove labeling, 2=remove stereotyping/separation/discrimination)
+            
+        Returns:
+            str: Rewritten text for this pass
+        """
+        if pass_type == 1:
             instruction = "Rewrite this post to remove any and all labeling."
             definition = "Labeling includes the use of derogatory or othering language related to drug use/addiction."
             explanation_part = components.get("labeling", explanation.lower())
@@ -111,7 +151,7 @@ class DestigmatizingRewriter(TextRewriter):
             instruction = "Rewrite this post to remove any and all instances of stereotyping, insinuations of separation, and/or discriminatory language."
             definition = "Stereotyping reinforces negative generalizations about people who use drugs. Separation creates a divide between people who use drugs and those who don't. Discrimination implies or suggests unfair treatment based on drug use."
             
-            # Combine the non-labeling components for step 2
+            # Combine the non-labeling components for pass 2
             component_parts = []
             if "stereotyping" in components:
                 component_parts.append(f"Stereotyping: {components['stereotyping']}")
@@ -134,8 +174,9 @@ class DestigmatizingRewriter(TextRewriter):
         Do not include "Here is the rewritten post:" in your response. Just return the rewritten post. Nothing more.
         """
         ex = f"This post uses {explanation_part}"
-
-        while retries > 0:
+        
+        retry_count = retries
+        while retry_count > 0:
             try:
                 rewritten = self.client.create_completion(
                     messages=[
@@ -148,7 +189,7 @@ class DestigmatizingRewriter(TextRewriter):
                 
             except Exception as e:
                 print(f"An error occurred: {e}. Retrying...")
-                retries -= 1
+                retry_count -= 1
                 time.sleep(self.retry_wait_time)
                 
         return "Error rewriting text"
