@@ -12,7 +12,8 @@ from .core import (
     classify_if_stigma,
     analyze_text_llm,
     rewrite_to_destigma,
-    get_emotion
+    get_emotion,
+    analyze_and_rewrite_text
 )
 
 # Import main classes for direct access
@@ -30,6 +31,7 @@ __all__ = [
     'analyze_text_llm',
     'rewrite_to_destigma',
     'get_emotion',
+    'analyze_and_rewrite_text',
     
     # Client classes
     'LLMClient',

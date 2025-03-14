@@ -136,3 +136,71 @@ def rewrite_to_destigma(text: str, explanation: str, style_instruct: str,
         model=mapped_model,
         retries=retries
     )
+    
+def analyze_and_rewrite_text(text: str, client: Any, model: Optional[str] = None, retries: int = 2) -> str:
+    """
+    Analyze and rewrite text in a single workflow.
+    
+    This function encapsulates the entire reframe workflow:
+    1. Classify if the text is drug-related
+    2. If drug-related, classify if the text contains stigmatizing language
+    3. If stigmatizing, analyze the text style and emotion
+    4. If stigmatizing, rewrite to remove stigmatizing language
+    
+    Args:
+        text: Text to analyze and potentially rewrite
+        client: Client instance (from reframe.initialize())
+        model: Model to use for all operations
+        retries: Number of retries on failure
+        
+    Returns:
+        str: The rewritten text if stigmatizing and drug-related,
+             otherwise returns the original text
+    """
+    # Step 1: Classify if drug-related
+    print("Step 1: Classifying drug-related content...")
+    drug_result = classify_if_drug(text, client, model, retries)
+    
+    # If not drug-related, return the original text
+    if drug_result != 'D':
+        print("Text is not drug-related. Skipping further analysis.")
+        return text
+    
+    # Step 2: Classify if stigmatizing
+    print("Step 2: Checking for stigmatizing language...")
+    stigma_result = classify_if_stigma(text, client, model, retries)
+    
+    # Check if text is stigmatizing (starts with 's')
+    is_stigmatizing = stigma_result.startswith('s')
+    
+    # If not stigmatizing, return the original text
+    if not is_stigmatizing:
+        print("No stigmatizing content detected. Skipping further analysis.")
+        return text
+    
+    # Step 3: Analyze text style
+    print("Step 3: Analyzing text style and emotion...")
+    style_result = analyze_text_llm(text, client, model)
+        
+    # Step 4: Rewrite to remove stigma
+    print("Step 4: Rewriting stigmatizing content...")
+    # Extract explanation part from stigma classification
+    if ', ' in stigma_result:
+        _, explanation = stigma_result.split(', ', 1)
+    else:
+        explanation = stigma_result
+    
+    # Convert style result to string for the rewriter
+    style_instruct = str(style_result)
+    
+    # Rewrite the text
+    rewritten_text = rewrite_to_destigma(
+        text=text,
+        explanation=explanation,
+        style_instruct=style_instruct,
+        model=model,
+        client=client,
+        retries=retries
+    )
+    
+    return rewritten_text
