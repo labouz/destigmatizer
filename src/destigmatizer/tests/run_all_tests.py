@@ -74,8 +74,6 @@ def main():
         test_text_analyzer(api_key, args.model, args.client_type)
     elif args.test == 'rewriter':
         test_rewriter(api_key, args.model, args.client_type)
-    elif args.test == 'emotion':
-        test_emotion_detector(api_key, args.model, args.client_type)
     elif args.test == 'workflow':
         test_workflow(api_key, args.model, args.client_type)
 
