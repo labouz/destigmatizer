@@ -55,24 +55,29 @@ def get_model_mapping(model_name: Optional[str] = None, client_type: str = "open
     Returns:
         str: Provider-specific model name
     """
-    # Define mappings from generic model types to specific models
-    model_mappings = {
-        "small": {
-            "openai": "gpt-4o-mini",
-            "together": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-            "claude": "claude-3-haiku-20241022",
-        },
-        "medium": {
-            "openai": "gpt-4o",
-            "together": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-            "claude": "claude-3-5-sonnet-20240620",
-        },
-        "large": {
-            "openai": "gpt-4o-2024-05-13",
-            "together": "mistralai/Mixtral-8x22B-Instruct-v0.1",
-            "claude": "claude-3-opus-20240229",
+    # Try to load user config first
+    user_config = load_user_model_configs()
+    model_mappings = user_config.get("model_mappings", {})
+    
+    # If no config or missing mappings, use defaults
+    if not model_mappings:
+        model_mappings = {
+            "small": {
+                "openai": "gpt-4o-mini",
+                "together": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+                "claude": "claude-3-haiku-20241022",
+            },
+            "medium": {
+                "openai": "gpt-4o",
+                "together": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+                "claude": "claude-3-5-sonnet-20240620",
+            },
+            "large": {
+                "openai": "gpt-4o-2024-05-13",
+                "together": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+                "claude": "claude-3-opus-20240229",
+            }
         }
-    }
     
     # If a generic name is provided, map it
     if model_name in model_mappings:
@@ -95,11 +100,21 @@ def get_default_model(client_type: str) -> Optional[str]:
     Returns:
         str: Default model name for the client type, None if client type is unsupported
     """
+    # Try to load user config first
+    user_config = load_user_model_configs()
+    default_models = user_config.get("default_models", {})
+    
+    # If config has this client type, use that model
+    if client_type.lower() in default_models:
+        return default_models[client_type.lower()]
+    
+    # Otherwise fall back to hardcoded defaults
     client_defaults = {
         "openai": "gpt-4o",
         "together": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
         "claude": "claude-3-5-haiku-20241022",
-        # Add other providers as needed
+        "ollama": "llama3:8b", 
+        "gemini": "gemini-1.0-pro-001"
     }
     
     return client_defaults.get(client_type.lower())
@@ -244,3 +259,47 @@ def identify_client(client: Any) -> str:
         return "claude"
     
     return "unknown"
+
+def load_user_model_configs() -> Dict[str, Any]:
+    """
+    Load user configuration from standard locations.
+    
+    Checks multiple locations in this order:
+    1. Environment variable REFRAME_CONFIG_PATH
+    2. User's home directory ~/.reframe/config.json
+    3. Current working directory reframe_config.json or config/reframe_config.json
+    4. Package directory
+    
+    Returns:
+        dict: Configuration dictionary, empty dict if no config found
+    """
+    # Standard locations to check
+    locations = [
+        os.environ.get("REFRAME_CONFIG_PATH"),
+        os.path.join(os.path.expanduser("~"), ".reframe", "config.json"),
+        os.path.join(os.getcwd(), "reframe_config.json"),
+        os.path.join(os.getcwd(), "config", "reframe_config.json"),
+    ]
+    
+    # Also check in package directory
+    try:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        package_dir = os.path.dirname(module_dir)
+        
+        locations.extend([
+            os.path.join(module_dir, "config", "reframe_config.json"),
+            os.path.join(package_dir, "config", "reframe_config.json"),
+        ])
+    except Exception:
+        pass
+    
+    # Try each location
+    for location in locations:
+        if location and os.path.exists(location):
+            try:
+                with open(location, 'r') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, PermissionError):
+                continue
+    
+    return {}

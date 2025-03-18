@@ -2,9 +2,9 @@ import sys
 import os
 import json
 import argparse
-import reframe
+import destigmatizer
 
-from reframe.tests.utils import setup_test_argument_parser, parse_test_args
+from destigmatizer.tests.utils import setup_test_argument_parser, parse_test_args
 
 def test_text_analyzer(api_key=None, model=None, client_type=None):
     """
@@ -17,7 +17,7 @@ def test_text_analyzer(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = destigmatizer.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -38,7 +38,7 @@ def test_text_analyzer(api_key=None, model=None, client_type=None):
     for text_type, text in test_texts.items():
         print(f"\nAnalyzing: {text_type}")
         print(f"Text: {text}")
-        result = reframe.analyze_text_llm(
+        result = destigmatizer.analyze_text_llm(
             text,
             client,
             model=model

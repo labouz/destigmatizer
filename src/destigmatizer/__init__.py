@@ -21,7 +21,7 @@ from .clients import LLMClient, OpenAIClient, TogetherClient, ClaudeClient, get_
 from .classifiers import BaseClassifier, DrugClassifier, StigmaClassifier
 from .analyzers import TextAnalyzer, StyleAnalyzer, EmotionAnalyzer, LLMBasedAnalyzer
 from .rewriters import TextRewriter, DestigmatizingRewriter
-from .utils import get_model_mapping, get_default_model, determine_client_type
+from .utils import get_model_mapping, get_default_model, determine_client_type, load_user_model_configs
 
 __all__ = [
     # Core functions (backward compatibility)
@@ -53,9 +53,9 @@ __all__ = [
     
     # Rewriter classes
     'TextRewriter',
-    'DestigmatizingRewriter'
+    'DestigmatizingRewriter',
     
     'get_model_mapping',
     'get_default_model',
-    'determine_client_type'
+    'load_user_model_configs'
 ]

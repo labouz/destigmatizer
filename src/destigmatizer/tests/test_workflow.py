@@ -2,9 +2,9 @@ import sys
 import os
 import json
 import argparse
-import reframe
+import destigmatizer
 
-from reframe.tests.utils import setup_test_argument_parser, parse_test_args
+from destigmatizer.tests.utils import setup_test_argument_parser, parse_test_args
 
 def test_workflow(api_key=None, model=None, client_type=None):
     """
@@ -17,7 +17,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = destigmatizer.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -32,7 +32,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     
     # Test drug classification
     print("\nTesting drug classification...")
-    drug_result = reframe.classify_if_drug(
+    drug_result = destigmatizer.classify_if_drug(
         test_post,
         client=client,
         model=model
@@ -41,7 +41,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     
     # Step 1: Classify if stigma and get explanation
     print("\nStep 1: Stigma classification and explanation...")
-    stigma_result = reframe.classify_if_stigma(
+    stigma_result = destigmatizer.classify_if_stigma(
         test_post,
         client=client,
         model=model
@@ -60,7 +60,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
 
     # Step 2: Analyze text style
     print("\nStep 2: Text style analysis...")
-    style_result = reframe.analyze_text_llm(
+    style_result = destigmatizer.analyze_text_llm(
         test_post, 
         client, 
         model=model
@@ -69,7 +69,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
 
     # Step 3: Emotion detection
     print("\nStep 3: Emotion detection...")
-    emotion = reframe.get_emotion(
+    emotion = destigmatizer.get_emotion(
         test_post,
         client,
         model=model
@@ -79,7 +79,7 @@ def test_workflow(api_key=None, model=None, client_type=None):
     # Step 4: Rewriting with actual explanation and style
     print("\nStep 4: Rewriting process...")
     # First rewrite
-    rewrite_res = reframe.rewrite_to_destigma(
+    rewrite_res = destigmatizer.rewrite_to_destigma(
         test_post,
         explanation,
         str(style_result),

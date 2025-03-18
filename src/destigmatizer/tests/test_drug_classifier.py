@@ -1,6 +1,6 @@
-import reframe
+import destigmatizer
 
-from reframe.tests.utils import get_api_key_for_testing, get_model_for_testing, setup_test_argument_parser, parse_test_args
+from destigmatizer.tests.utils import get_api_key_for_testing, get_model_for_testing, setup_test_argument_parser, parse_test_args
 
 def test_drug_classifier(api_key=None, model=None, client_type=None):
     """
@@ -13,7 +13,7 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = destigmatizer.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
         
         
@@ -36,7 +36,7 @@ def test_drug_classifier(api_key=None, model=None, client_type=None):
     print("\nTesting drug classification...")
     for post_type, post in test_posts.items():
         print(f"\nTesting on: {post}")
-        result = reframe.classify_if_drug(
+        result = destigmatizer.classify_if_drug(
             post,
             client=client,
             model=model

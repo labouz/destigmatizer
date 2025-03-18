@@ -5,7 +5,7 @@ import sys
 import argparse
 from typing import Optional, Tuple, Any
 
-from reframe.utils import load_api_key, get_default_model, get_api_key_with_fallbacks
+from destigmatizer.utils import load_api_key, get_default_model, get_api_key_with_fallbacks
 
 
 def get_api_key_for_testing(api_key: Optional[str] = None, client_type: str = "openai") -> str:

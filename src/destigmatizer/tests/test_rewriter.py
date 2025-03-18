@@ -2,9 +2,9 @@ import sys
 import os
 import json
 import argparse
-import reframe
+import destigmatizer
 
-from reframe.tests.utils import setup_test_argument_parser, parse_test_args
+from destigmatizer.tests.utils import setup_test_argument_parser, parse_test_args
 
 def test_rewriter(api_key=None, model=None, client_type=None):
     """
@@ -17,7 +17,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
     """
     # Initialize client
     try:
-        client = reframe.initialize(api_key=api_key, client_type=client_type)
+        client = destigmatizer.initialize(api_key=api_key, client_type=client_type)
         print("✓ Client initialization successful")
     except Exception as e:
         print(f"Error initializing client: {e}")
@@ -42,7 +42,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
     
     # First get style analysis for one of the texts to use in rewriting
     print("\nGetting style analysis for rewriting...")
-    style_result = reframe.analyze_text_llm(
+    style_result = destigmatizer.analyze_text_llm(
         test_cases[0]["text"],
         client,
         model=model
@@ -57,7 +57,7 @@ def test_rewriter(api_key=None, model=None, client_type=None):
         print(f"Explanation: {case['explanation']}")
         
         # Step 1: Remove labeling
-        rewrite_res = reframe.rewrite_to_destigma(
+        rewrite_res = destigmatizer.rewrite_to_destigma(
             case["text"],
             case["explanation"],
             style_instruct,

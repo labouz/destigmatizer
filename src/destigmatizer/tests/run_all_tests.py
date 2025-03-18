@@ -1,11 +1,11 @@
 # Import test functions directly rather than modules
-from reframe.tests.test_drug_classifier import test_drug_classifier
-from reframe.tests.test_stigma_classifier import test_stigma_classifier 
-from reframe.tests.test_text_analyzer import test_text_analyzer
-from reframe.tests.test_rewriter import test_rewriter
-from reframe.tests.test_workflow import test_workflow
+from destigmatizer.tests.test_drug_classifier import test_drug_classifier
+from destigmatizer.tests.test_stigma_classifier import test_stigma_classifier 
+from destigmatizer.tests.test_text_analyzer import test_text_analyzer
+from destigmatizer.tests.test_rewriter import test_rewriter
+from destigmatizer.tests.test_workflow import test_workflow
 
-from reframe.tests.utils import get_api_key_for_testing, setup_test_argument_parser, get_model_for_testing
+from destigmatizer.tests.utils import get_api_key_for_testing, setup_test_argument_parser, get_model_for_testing
 
 
 def run_all_tests(api_key=None, model=None, client_type=None):
