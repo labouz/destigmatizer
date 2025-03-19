@@ -1,61 +1,58 @@
 """
-Reframe: A Python package for destigmatizing language related to drug use.
+Destigmatizer: A Python package for destigmatizing language related to drug use.
 
 This package provides tools to identify, analyze, and rewrite text
 containing stigmatizing language.
 """
 
-# Import from core for backward compatibility
+# Core functions
 from .core import (
     initialize,
+    analyze_and_rewrite_text,
     classify_if_drug,
     classify_if_stigma,
     analyze_text_llm,
-    rewrite_to_destigma,
-    get_emotion,
-    analyze_and_rewrite_text
+    rewrite_to_destigma
 )
 
-# Import main classes for direct access
-from .clients import LLMClient, OpenAIClient, TogetherClient, ClaudeClient, get_client
-from .classifiers import BaseClassifier, DrugClassifier, StigmaClassifier
-from .analyzers import TextAnalyzer, StyleAnalyzer, EmotionAnalyzer, LLMBasedAnalyzer
-from .rewriters import TextRewriter, DestigmatizingRewriter
-from .utils import get_model_mapping, get_default_model, determine_client_type, load_user_model_configs
+# Pipeline components
+from .pipeline import create_pipeline, TextPipeline
+from .filters import (
+    classify_drug_filter,
+    classify_stigma_filter,
+    analyze_style_filter,
+    rewrite_text_filter
+)
+
+# Original components for backward compatibility
+from .clients import get_client, LLMClient, OpenAIClient, TogetherClient, ClaudeClient
+from .utils import get_model_mapping, get_default_model
 
 __all__ = [
-    # Core functions (backward compatibility)
+    # Core functions
     'initialize',
+    'analyze_and_rewrite_text',
     'classify_if_drug',
     'classify_if_stigma',
     'analyze_text_llm',
     'rewrite_to_destigma',
-    'get_emotion',
-    'analyze_and_rewrite_text',
     
-    # Client classes
+    # Pipeline components
+    'create_pipeline',
+    'TextPipeline',
+    'classify_drug_filter',
+    'classify_stigma_filter',
+    'analyze_style_filter',
+    'rewrite_text_filter',
+    
+    # Client utilities
+    'get_client',
     'LLMClient',
     'OpenAIClient',
     'TogetherClient',
     'ClaudeClient',
-    'get_client',
     
-    # Classifier classes
-    'BaseClassifier',
-    'DrugClassifier',
-    'StigmaClassifier',
-    
-    # Analyzer classes
-    'TextAnalyzer',
-    'StyleAnalyzer',
-    'EmotionAnalyzer',
-    'LLMBasedAnalyzer',
-    
-    # Rewriter classes
-    'TextRewriter',
-    'DestigmatizingRewriter',
-    
+    # Model utilities
     'get_model_mapping',
-    'get_default_model',
-    'load_user_model_configs'
+    'get_default_model'
 ]
