@@ -1,5 +1,5 @@
 """
-Utility script for managing reframe configurations.
+Utility script for managing destigmatizer configurations.
 """
 
 import os
@@ -238,7 +238,7 @@ def get_user_config_path() -> str:
         str: Path to the user configuration file
     """
     home_dir = os.path.expanduser("~")
-    config_dir = os.path.join(home_dir, ".reframe")
+    config_dir = os.path.join(home_dir, ".destigmatizer")
     return os.path.join(config_dir, "config.json")
 
 def get_effective_config() -> Dict[str, Any]:
@@ -270,12 +270,12 @@ def get_effective_config() -> Dict[str, Any]:
             package_dir = os.path.dirname(module_dir)
             
             locations = [
-                os.path.join(module_dir, "config", "reframe_config.json"),
-                os.path.join(package_dir, "config", "reframe_config.json"),
-                os.path.join(os.getcwd(), "reframe_config.json"),
-                os.path.join(os.getcwd(), "config", "reframe_config.json"),
-                os.path.join(os.path.expanduser("~"), ".reframe", "config.json"),
-                os.environ.get("REFRAME_CONFIG_PATH")
+                os.path.join(module_dir, "config", "destigmatizer_config.json"),
+                os.path.join(package_dir, "config", "destigmatizer_config.json"),
+                os.path.join(os.getcwd(), "destigmatizer_config.json"),
+                os.path.join(os.getcwd(), "config", "destigmatizer_config.json"),
+                os.path.join(os.path.expanduser("~"), ".destigmatizer", "config.json"),
+                os.environ.get("DESTIGMATIZER_CONFIG_PATH")
             ]
             
             for location in locations:
@@ -306,12 +306,12 @@ def display_config(config: Dict[str, Any], indent: int = 0) -> None:
             print(f"{indent_str}{key}: {value}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Reframe Configuration Manager")
+    parser = argparse.ArgumentParser(description="Destigmatizer Configuration Manager")
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
     
     # Create default config command
     create_parser = subparsers.add_parser("create", help="Create default configuration file")
-    create_parser.add_argument("--output", "-o", default="./reframe_config.json", 
+    create_parser.add_argument("--output", "-o", default="./destigmatizer_config.json", 
                              help="Output path for the configuration file")
     create_parser.add_argument("--overwrite", action="store_true", 
                              help="Overwrite existing configuration file")
@@ -396,7 +396,7 @@ def main():
             print("Current effective configuration:")
             display_config(config)
         else:
-            print("No configuration found. Run 'reframe config init' to create a default configuration.")
+            print("No configuration found. Run 'destigmatizer config init' to create a default configuration.")
     
     else:
         parser.print_help()

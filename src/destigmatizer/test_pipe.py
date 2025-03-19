@@ -18,7 +18,7 @@ pipeline.add_filter(classify_stigma_filter)
 pipeline.add_filter(rewrite_text_filter)
 
 # Process text
-text = "Addicts really need to get control of themselves."
+text = "I really feel for people who suffer from substance use disorder, being unable to control an impulse due to dependency sounds scary."
 result = pipeline.process(text)
 
 print(f"Original: {text}")
