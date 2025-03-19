@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "destigmatizer"
-version = "0.0.9"
+version = "0.0.11"
 dependencies = [
     "nltk",
     "lexicalrichness",
@@ -18,7 +18,7 @@ authors = [
 maintainers = [
   {name = "Layla Bouzoubaa", email="author@example.com"}
 ]
-description = "An llm-powered platform-agnostic utility for destigmatizing language pertaining to drugs and their use. This library is provided and was designed with multiple steps in mind to produce explainable results. These steps are meant to be used in sequence (to identify destigmatizing text and then destigmatize) however, they can be used independently to identify text pertaining to drugs, identify text with drug-related stigma, and find the style of the writing. Of important note, this library does not attempt to handle LLM client creation and expects it to be done prior to use."
+description =  "An llm-powered platform-agnostic language utility for destigmatizing drug language"
 readme = "README.md"
 
 classifiers = [
@@ -29,7 +29,7 @@ classifiers = [
 license = {text = "BSD-3-Clause"}
 
 [project.scripts]
-reframe-test = "destigmatizer.tests.run_all_tests:main"
+reframe-test = "reframe.tests.run_all_tests:main"
 
 
 [project.urls]
