@@ -44,51 +44,35 @@ def analyze_and_rewrite_text(text: str, client: Any, model: Optional[str] = None
     if verbose:
         print("Step 1: Creating pipeline...")
         
-    # Create pipeline
+    # Create pipeline with all filters and their conditions
     pipeline = create_pipeline(client=client, model=model)
     
-    # Add filters in sequence
+    # Add drug filter (always executes)
     pipeline.add_filter(classify_drug_filter)
     
-    if verbose:
-        print("Step 2: Classifying drug-related content...")
-        
-    # Process text with just the drug filter
-    intermediate_result = pipeline.process(text)
+    # Add stigma filter (only if drug-related)
+    pipeline.add_filter(classify_stigma_filter, condition="is_drug_related")
     
-    # If not drug-related, return original text
-    if not intermediate_result["metadata"].get("is_drug_related", False):
-        if verbose:
-            print("Text is not drug-related. Skipping further analysis.")
-        return text
+    # Add style analyzer (only if stigmatizing)
+    pipeline.add_filter(analyze_style_filter, condition="is_stigmatizing")
     
-    # Add remaining filters
-    if verbose:
-        print("Step 3: Checking for stigmatizing language...")
-        
-    pipeline.add_filter(classify_stigma_filter)
-    
-    # Process with the stigma filter
-    intermediate_result = pipeline.process(text)
-    
-    # If not stigmatizing, return original text
-    if not intermediate_result["metadata"].get("is_stigmatizing", False):
-        if verbose:
-            print("No stigmatizing content detected. Skipping further analysis.")
-        return text
+    # Add rewriter (only if stigmatizing)
+    pipeline.add_filter(rewrite_text_filter, condition="is_stigmatizing")
     
     if verbose:
-        print("Step 4: Analyzing text style...")
-        
-    pipeline.add_filter(analyze_style_filter)
+        print("Processing text through pipeline...")
     
-    if verbose:
-        print("Step 5: Rewriting stigmatizing content...")
-        
-    pipeline.add_filter(rewrite_text_filter)
-    
-    # Process through the full pipeline
+    # Process through the complete pipeline
     result = pipeline.process(text)
+    
+    # Log progress if verbose
+    if verbose:
+        if not result["metadata"].get("is_drug_related", False):
+            print("Text is not drug-related. Skipping further analysis.")
+        elif not result["metadata"].get("is_stigmatizing", False):
+            print("No stigmatizing content detected. Skipping further analysis.")
+        elif result["metadata"].get("was_rewritten", False):
+            print("Text was successfully rewritten.")
     
     return result["processed_text"]
 
@@ -118,21 +102,33 @@ def analyze_text_llm(text: str, client: Any, model: Optional[str] = None) -> Dic
     return result["metadata"].get("style_analysis", {})
 
 def rewrite_to_destigma(text, explanation, style_instruct, model, client):
-    # Create pipeline
+    """Rewrite stigmatizing text using provided explanation and style instructions."""
+    # Create a pipeline with pre-populated metadata
     pipeline = create_pipeline(client=client, model=model)
     
-    # Manipulate the pipeline data directly
-    pipeline.add_filter(
-        rewrite_text_filter,
-        rewrite_data = {
-            "explanation": explanation,
-            "style_instruct": style_instruct,
-            "client": client,
-            "model": model
-        }
+    # Custom filter that uses the externally provided data instead of pipeline metadata
+    def custom_rewrite_filter(text, client, model, **kwargs):
+        from .rewriters import DestigmatizingRewriter
         
-    )
+        rewriter = DestigmatizingRewriter(client)
+        rewritten_text = rewriter.rewrite(
+            text=text,
+            explanation=explanation,
+            style_instruct=style_instruct,
+            model=model
+        )
+        
+        return {
+            "text": rewritten_text,
+            "metadata": {
+                "was_rewritten": True
+            }
+        }
     
+    # Add our custom filter
+    pipeline.add_filter(custom_rewrite_filter)
+    
+    # Process and return
     result = pipeline.process(text)
     return result["processed_text"]
 
