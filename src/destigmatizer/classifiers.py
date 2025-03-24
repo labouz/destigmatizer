@@ -56,6 +56,7 @@ class DrugClassifier(BaseClassifier):
         - Prescription Drugs: drugs that are often abused even if they have legitimate medical uses (e.g., opioids, benzodiazepines).
         - Other Drugs: drugs that are non-prescription and known to be abused (e.g., inhalants, k2, bath salts).
         - Explicit mentions of drug use, abuse, or addiction related terms (e.g., "getting high", "stoned").
+        - Explicit mentions of substance use and substance use disorders (e.g., "opioid use disorder", "SUD")
 
         3. **Exclude**:
         - Tobacco, nicotine, or alcohol unless explicitly linked to drug use.
