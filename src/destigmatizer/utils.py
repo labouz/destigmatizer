@@ -1,4 +1,4 @@
-"""Utility functions for the reframe package."""
+"""Utility functions for the destigmatizer package."""
 
 import os
 import json
@@ -265,9 +265,9 @@ def load_user_model_configs() -> Dict[str, Any]:
     Load user configuration from standard locations.
     
     Checks multiple locations in this order:
-    1. Environment variable REFRAME_CONFIG_PATH
-    2. User's home directory ~/.reframe/config.json
-    3. Current working directory reframe_config.json or config/reframe_config.json
+    1. Environment variable DESTIGMATIZER_CONFIG_PATH
+    2. User's home directory ~/.destigmatizer/config.json
+    3. Current working directory destigmatizer_config.json or config/destigmatizer_config.json
     4. Package directory
     
     Returns:
@@ -275,10 +275,10 @@ def load_user_model_configs() -> Dict[str, Any]:
     """
     # Standard locations to check
     locations = [
-        os.environ.get("REFRAME_CONFIG_PATH"),
-        os.path.join(os.path.expanduser("~"), ".reframe", "config.json"),
-        os.path.join(os.getcwd(), "reframe_config.json"),
-        os.path.join(os.getcwd(), "config", "reframe_config.json"),
+        os.environ.get("DESTIGMATIZER_CONFIG_PATH"),
+        os.path.join(os.path.expanduser("~"), ".destigmatizer", "config.json"),
+        os.path.join(os.getcwd(), "destigmatizer_config.json"),
+        os.path.join(os.getcwd(), "config", "destigmatizer_config.json"),
     ]
     
     # Also check in package directory
@@ -287,8 +287,8 @@ def load_user_model_configs() -> Dict[str, Any]:
         package_dir = os.path.dirname(module_dir)
         
         locations.extend([
-            os.path.join(module_dir, "config", "reframe_config.json"),
-            os.path.join(package_dir, "config", "reframe_config.json"),
+            os.path.join(module_dir, "config", "destigmatizer_config.json"),
+            os.path.join(package_dir, "config", "destigmatizer_config.json"),
         ])
     except Exception:
         pass
