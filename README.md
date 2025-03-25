@@ -52,7 +52,7 @@ print(f"Original: {DRUG_AND_STIGMA_POST}")
 print(f"Rewritten: {rewritten_text}")
 
 ```
-
+🧑🏻‍💻 Experiment with these fundtions in [Google Colab](https://colab.research.google.com/drive/1sjyIt6HYj2GwZHr2VHsrx_f3VtJaug1o?usp=sharing)!
 
 Reframe includes integrated tests for all major functions. You can run tests in two ways:
 
